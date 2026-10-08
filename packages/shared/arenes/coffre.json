@@ -1,0 +1,134 @@
+{
+ "id": "coffre",
+ "nom": "Le Coffre",
+ "description": "Les couronnes sont au coffre. Pour entrer, il faut abroger les murs… pour tout le monde.",
+ "carte": [
+  "..................",
+  "..................",
+  ".....MMMMMMMM.....",
+  ".....M......M.....",
+  ".LL..M..KK..M..LL.",
+  ".LL..M......M..LL.",
+  ".LL..M..KK..M..LL.",
+  ".....M......M.....",
+  ".....MMMMMMMM.....",
+  "..................",
+  ".................."
+ ],
+ "blocs": [
+  {
+   "x": 1,
+   "y": 0,
+   "mots": [
+    "MUR",
+    "EST",
+    "SOLIDE"
+   ]
+  },
+  {
+   "x": 7,
+   "y": 5,
+   "mots": [
+    "COURONNE",
+    "EST",
+    "POINTS"
+   ],
+   "verrou": true
+  },
+  {
+   "x": 7,
+   "y": 9,
+   "mots": [
+    "LEADER",
+    "EST",
+    "LENT"
+   ]
+  },
+  {
+   "x": 14,
+   "y": 9,
+   "mots": [
+    "POINTS"
+   ]
+  },
+  {
+   "x": 16,
+   "y": 10,
+   "mots": [
+    "MORT"
+   ]
+  },
+  {
+   "x": 3,
+   "y": 3,
+   "mots": [
+    "EST"
+   ]
+  },
+  {
+   "x": 3,
+   "y": 9,
+   "mots": [
+    "LAVE"
+   ]
+  },
+  {
+   "x": 14,
+   "y": 3,
+   "mots": [
+    "TOUS"
+   ]
+  },
+  {
+   "x": 1,
+   "y": 9,
+   "mots": [
+    "INVISIBLE"
+   ]
+  },
+  {
+   "x": 16,
+   "y": 1,
+   "mots": [
+    "GEANT"
+   ]
+  },
+  {
+   "x": 9,
+   "y": 1,
+   "mots": [
+    "AIMANT"
+   ]
+  }
+ ],
+ "spawns": [
+  [1, 2],
+  [16, 3],
+  [1, 8],
+  [16, 8]
+ ],
+ "mots": [
+  "EST",
+  "EST",
+  "MORT",
+  "POINTS",
+  "SOLIDE",
+  "RAPIDE",
+  "LENT",
+  "GEANT",
+  "GLISSANT",
+  "AIMANT",
+  "INVISIBLE",
+  "ROUGE",
+  "BLEU",
+  "VERT",
+  "JAUNE",
+  "TOUS",
+  "LEADER",
+  "DERNIER",
+  "LAVE",
+  "MUR",
+  "CAISSE",
+  "COURONNE"
+ ]
+}

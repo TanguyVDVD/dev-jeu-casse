@@ -1,0 +1,25 @@
+{
+  "name": "casse",
+  "private": true,
+  "type": "module",
+  "workspaces": ["packages/*"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "node scripts/build.mjs && tsx watch packages/server/src/index.ts",
+    "build": "node scripts/build.mjs --prod",
+    "start": "node dist/serveur.js",
+    "typecheck": "tsc --noEmit -p .",
+    "test": "tsx --test packages/shared/test/regles.test.ts packages/shared/test/matrice.test.ts packages/shared/test/monde.test.ts",
+    "simulation": "tsx scripts/simulation.ts",
+    "lien": "node scripts/lien.mjs"
+  },
+  "devDependencies": {
+    "@fontsource/anton": "^5.0.0",
+    "@fontsource/courier-prime": "^5.0.0",
+    "@types/node": "^20.11.0",
+    "@types/ws": "^8.5.10",
+    "esbuild": "^0.21.5",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}

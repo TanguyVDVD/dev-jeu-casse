@@ -1,0 +1,127 @@
+{
+ "id": "rotative",
+ "nom": "La Rotative",
+ "description": "Deux bandes de lave patinoire et des caisses qui valent de l'or : on déménage ses points.",
+ "carte": [
+  "..................",
+  "..LLLLLLLLLLLLLL..",
+  "..................",
+  "....C........C....",
+  "..................",
+  "M.......CC.......M",
+  "..................",
+  "....C........C....",
+  "..................",
+  "..LLLLLLLLLLLLLL..",
+  ".................."
+ ],
+ "blocs": [
+  {
+   "x": 7,
+   "y": 0,
+   "mots": [
+    "LAVE",
+    "EST",
+    "GLISSANT"
+   ],
+   "verrou": true
+  },
+  {
+   "x": 7,
+   "y": 3,
+   "mots": [
+    "CAISSE",
+    "EST",
+    "SOLIDE"
+   ]
+  },
+  {
+   "x": 7,
+   "y": 7,
+   "mots": [
+    "CAISSE",
+    "EST",
+    "POINTS"
+   ]
+  },
+  {
+   "x": 2,
+   "y": 5,
+   "mots": [
+    "MORT"
+   ]
+  },
+  {
+   "x": 15,
+   "y": 5,
+   "mots": [
+    "EST"
+   ]
+  },
+  {
+   "x": 5,
+   "y": 5,
+   "mots": [
+    "RAPIDE"
+   ]
+  },
+  {
+   "x": 12,
+   "y": 5,
+   "mots": [
+    "LEADER"
+   ]
+  },
+  {
+   "x": 9,
+   "y": 2,
+   "mots": [
+    "TOUS"
+   ]
+  },
+  {
+   "x": 15,
+   "y": 7,
+   "mots": [
+    "GEANT"
+   ]
+  },
+  {
+   "x": 2,
+   "y": 8,
+   "mots": [
+    "LAVE"
+   ]
+  }
+ ],
+ "spawns": [
+  [0, 2],
+  [17, 2],
+  [0, 8],
+  [17, 8]
+ ],
+ "mots": [
+  "EST",
+  "EST",
+  "MORT",
+  "POINTS",
+  "SOLIDE",
+  "RAPIDE",
+  "LENT",
+  "GEANT",
+  "GLISSANT",
+  "AIMANT",
+  "INVISIBLE",
+  "ROUGE",
+  "BLEU",
+  "VERT",
+  "JAUNE",
+  "TOUS",
+  "LEADER",
+  "DERNIER",
+  "LAVE",
+  "MUR",
+  "CAISSE",
+  "COURONNE"
+ ]
+}
