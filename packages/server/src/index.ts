@@ -8,6 +8,7 @@ import { Salons, type Salon } from './salon';
 const PORT = Number(process.env.PORT ?? 8080);
 const PUBLIC = resolve(process.env.PUBLIC_DIR ?? 'dist/public');
 const CONNEXIONS_MAX = CONFIG.salon.max * CONFIG.salon.joueurs * 2;
+const SANS_SALON_MS = 15_000, POULS_MS = 30_000, REFUS_MAX = 5;
 
 const TYPES: Record<string, string> = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
@@ -25,10 +26,27 @@ function charger(dossier: string, prefixe = ''): Map<string, { type: string; cor
   return fichiers;
 }
 const fichiers = charger(PUBLIC);
+
+// Adresse à donner aux amis : fixée par URL_PUBLIQUE, sinon demandée à cloudflared (tunnel rapide).
+let urlPublique = /^https?:\/\/[\w.:-]+$/.test(process.env.URL_PUBLIQUE ?? '') ? process.env.URL_PUBLIQUE! : '';
+const TRAIT = '='.repeat(62);
+const afficherAdresse = () => console.info(`\n  ${TRAIT}\n   INVITEZ VOS AMIS :  ${urlPublique}\n  ${TRAIT}\n`);
+async function chercherTunnel(): Promise<void> {
+  const metriques = process.env.TUNNEL_METRICS_URL;
+  if (urlPublique) return afficherAdresse();
+  for (let essai = 0; metriques && essai < 60; essai++) {
+    try {
+      const { hostname } = (await (await fetch(`${metriques}/quicktunnel`, { signal: AbortSignal.timeout(2000) })).json()) as { hostname?: unknown };
+      if (typeof hostname === 'string' && /^[a-z0-9.-]+$/.test(hostname)) { urlPublique = `https://${hostname}`; return afficherAdresse(); }
+    } catch { /* cloudflared n'est pas encore prêt : on réessaie */ }
+    await new Promise((r) => setTimeout(r, 2000));
+  }
+}
 const salons = new Salons();
 
 const http = createServer((req, res) => {
   const chemin = (req.url ?? '/').split('?')[0];
+  if (chemin === '/adresse') return res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' }).end(JSON.stringify({ url: urlPublique || null }));
   if (chemin === '/healthz') return res.writeHead(200, { 'content-type': 'text/plain' }).end(`ok ${salons.nombre}`);
   const f = (req.method === 'GET' || req.method === 'HEAD') && fichiers.get(chemin === '/' ? '/index.html' : chemin);
   if (!f) return res.writeHead(404, { 'content-type': 'text/plain' }).end('introuvable');
@@ -37,7 +55,7 @@ const http = createServer((req, res) => {
     'cache-control': chemin.startsWith('/polices/') ? 'public, max-age=604800' : 'no-cache',
     'x-content-type-options': 'nosniff',
     'referrer-policy': 'no-referrer',
-    'content-security-policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none'",
+    'content-security-policy': "default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' ws: wss:; frame-ancestors 'none'; base-uri 'none'; object-src 'none'; form-action 'self'",
   }).end(req.method === 'HEAD' ? undefined : f.corps);
 });
 
@@ -55,14 +73,24 @@ wss.on('connection', (ws: WebSocket) => {
   let membre: Exclude<ReturnType<Salon['entrer']>, string> | undefined;
   let jetons: number = CONFIG.reseau.messagesParSeconde;
   let vu = Date.now();
-  const lien = { envoyer: (brut: string) => { if (ws.readyState === ws.OPEN && ws.bufferedAmount < 1 << 20) ws.send(brut); } };
+  let refus = 0;
+  let vivant = true;
+  // un client qui ne lit plus ses messages est coupé plutôt que mis en mémoire
+  const lien = { envoyer: (brut: string) => { if (ws.readyState !== ws.OPEN) return; if (ws.bufferedAmount > 1 << 20) ws.terminate(); else ws.send(brut); } };
   const dire = (m: MessageServeur) => lien.envoyer(JSON.stringify(m));
+  // pas de connexion qui traîne : il faut être entré dans un salon, et répondre aux pings
+  const oisif = setTimeout(() => { if (!salon) ws.close(1008, 'aucun salon rejoint'); }, SANS_SALON_MS);
+  const pouls = setInterval(() => { if (!vivant) return ws.terminate(); vivant = false; ws.ping(); }, POULS_MS);
+  ws.on('pong', () => { vivant = true; });
 
   const rejoindre = (s: Salon | null | undefined, pseudo: string, jeton?: string) => {
-    if (!s) return dire({ t: 'erreur', msg: 'Salon introuvable (ou serveur plein).' });
-    const r = s.entrer(lien, pseudo, jeton);
-    if (typeof r === 'string') return dire({ t: 'erreur', msg: r });
-    salon = s; membre = r;
+    const r = s ? s.entrer(lien, pseudo, jeton) : 'Salon introuvable (ou serveur plein).';
+    if (typeof r === 'string') {
+      dire({ t: 'erreur', msg: r });
+      if (++refus >= REFUS_MAX) ws.close(1008, 'trop de tentatives'); // pas de balayage des codes
+      return;
+    }
+    salon = s!; membre = r;
   };
 
   ws.on('message', (donnees, binaire) => {
@@ -89,7 +117,10 @@ wss.on('connection', (ws: WebSocket) => {
       salon.recevoir(membre, { t: 'lancer' });
     }
   });
-  ws.on('close', () => { if (salon && membre && membre.lien === lien) salon.sortir(membre); });
+  ws.on('close', () => {
+    clearTimeout(oisif); clearInterval(pouls);
+    if (salon && membre && membre.lien === lien) salon.sortir(membre);
+  });
   ws.on('error', () => ws.terminate());
 });
 
@@ -102,6 +133,6 @@ const horloge = setInterval(() => {
   while (prochain <= t) { prochain += PAS_MS; salons.tick(); }
 }, 4);
 
-http.listen(PORT, () => console.info(`CASSE écoute sur le port ${PORT}`));
+http.listen(PORT, () => { console.info(`CASSE écoute sur le port ${PORT}`); void chercherTunnel(); });
 for (const signal of ['SIGINT', 'SIGTERM'] as const)
   process.on(signal, () => { clearInterval(horloge); wss.close(); http.close(() => process.exit(0)); setTimeout(() => process.exit(0), 1500).unref(); });
