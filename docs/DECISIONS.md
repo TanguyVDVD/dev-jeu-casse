@@ -25,4 +25,9 @@
 - **Reconnexion** par jeton conservé dans `sessionStorage` ; la place est gardée 60 s en match.
 - **Bot** exécuté par le serveur avec le même code que la simulation, pour tester seul (bouton « Essai contre des bots »).
 - **Tunnel** : un seul service `cloudflared` ; le mode (rapide ou nommé) se choisit par `TUNNEL_ARGS` dans `.env`, car l'image cloudflared n'a pas de shell pour un `if`.
+- **Adresse d’invitation** : le serveur demande son nom d’hôte à cloudflared (`/quicktunnel` sur le port de métriques, interne au réseau compose), l’affiche encadré dans les journaux et le sert sur `/adresse` ; le bouton « Copier le lien » donne donc la bonne adresse même quand l’hôte joue sur `localhost`.
+- **Port lié à 127.0.0.1** dans compose : le jeu n’est joignable de l’extérieur que par le tunnel. Pour jouer en réseau local sans tunnel, retirer `127.0.0.1:` dans `docker-compose.yml`.
+- **Node 22** dans l’image (Node 20 n’est plus maintenu) ; le code tourne aussi sous Node 20 en local.
+- **Durcissement après revue de sécurité** : connexion fermée si aucun salon n’est rejoint en 15 s, ping toutes les 30 s, 5 tentatives de salon par connexion, client qui ne lit plus coupé, conteneur limité à 512 Mo. Pas de limite par adresse IP : derrière le tunnel, toutes les connexions viennent de cloudflared.
+- **Codes à 4 lettres** (imposé par le cahier des charges) : ~105 000 combinaisons, donc devinables avec de la patience. La limite de tentatives ralentit le balayage, elle ne l’empêche pas ; pire cas : un inconnu occupe une place dans un salon.
 - **Tactile** : non fait (bonus).

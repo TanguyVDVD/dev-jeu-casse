@@ -309,3 +309,15 @@ test('déterministe : même graine, mêmes entrées, même monde', () => {
   };
   assert.equal(jouer(), jouer());
 });
+
+test('le bot replanifie à la manche suivante (sa mémoire survit, pas le compteur de pas)', () => {
+  const mem = memoireBot();
+  const premiere = creerMonde(ARENES[0], [0, 1], 3);
+  premiere.phase = 'jeu'; premiere.tick = 2500;
+  penser(premiere, 0, mem);
+  const echeance = mem.jusqua;
+  const suivante = creerMonde(ARENES[1], [0, 1], 3);
+  suivante.phase = 'jeu';
+  penser(suivante, 0, mem);
+  assert.ok(mem.jusqua < echeance && mem.jusqua <= 120);
+});

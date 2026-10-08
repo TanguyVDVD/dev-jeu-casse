@@ -10,8 +10,10 @@
 4. Ouvrez cette adresse, créez un salon, cliquez **Copier le lien** et envoyez-le à vos amis.
 5. Tout le monde clique **Prêt**, vous cliquez **Lancer la partie**.
 
-Adresse perdue ? `npm run lien` (ou `docker compose logs tunnel | grep trycloudflare`). Arrêter : `Ctrl+C`, puis `docker compose down`.
+Adresse perdue ? `npm run lien`, ou `docker compose logs jeu` (PowerShell et bash). Arrêter : `Ctrl+C`, puis `docker compose down`.
 L'adresse change à chaque démarrage : c'est un tunnel rapide Cloudflare, sans compte.
+
+Le port 8080 n’est ouvert que sur votre machine (`http://localhost:8080`) : tout le monde, même sur votre Wi-Fi, passe par le lien du tunnel.
 
 ## Jouer
 
@@ -52,7 +54,7 @@ Node 20 ou plus.
 ```
 npm install
 npm run dev          # construit puis sert http://localhost:8080
-npm test             # 148 tests (moteur de règles, simulation, salons)
+npm test             # 149 tests (moteur de règles, simulation, salons)
 npm run typecheck
 npm run simulation   # 4 clients WebSocket jouent un match complet ; --latence 100 pour simuler du délai
 ```

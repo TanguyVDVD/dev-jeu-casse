@@ -15,7 +15,8 @@ export function penser(w: Monde, id: number, mem: MemoireBot): Entree {
 
   const mortelEn = (x: number, y: number) => { const o = objetEn(w, x, y); return !!o && mortels.includes(o); };
 
-  if (w.tick >= mem.jusqua) {
+  // le compteur de pas repart de zéro à chaque manche : une échéance trop lointaine est périmée
+  if (w.tick >= mem.jusqua || mem.jusqua > w.tick + 120) {
     mem.jusqua = w.tick + 30 + Math.floor(Math.random() * 60);
     mem.px = mem.py = 0;
     const payants = (Object.keys(w.tagsObjet) as Objet[]).filter((o) => w.tagsObjet[o].includes('POINTS'));
