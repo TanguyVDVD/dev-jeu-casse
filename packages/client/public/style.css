@@ -34,6 +34,7 @@ button.discret { background: none; color: var(--encre); box-shadow: none; font: 
 button:disabled { opacity: .35; cursor: not-allowed; }
 :focus-visible { outline: 3px dashed var(--j1); outline-offset: 3px; }
 input { font: 700 18px var(--texte); color: var(--encre); background: var(--papier); border: 3px solid var(--encre); padding: 9px 10px; min-width: 0; }
+::placeholder { color: #6B6257; opacity: 1; }
 #code { width: 5.2em; text-transform: uppercase; letter-spacing: .2em; text-align: center; }
 #lien { width: min(30em, 60vw); font-size: 14px; }
 label { font: 700 13px var(--texte); text-transform: uppercase; letter-spacing: .15em; text-align: left; }
@@ -85,10 +86,10 @@ body:not(.hote) .hote { display: none; }
 #toile { border: 4px solid var(--encre); box-shadow: 7px 7px 0 var(--encre); background: var(--papier); image-rendering: auto; }
 #regles, #fil { text-align: left; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
 #regles h3, #fil h3 { font: 700 12px var(--texte); letter-spacing: .25em; text-transform: uppercase; border-bottom: 3px solid var(--encre); padding-bottom: 3px; }
-.regle { font: 21px/1.05 var(--titre); padding: 5px 7px 3px; background: var(--encre); color: var(--papier); display: flex; gap: 6px; align-items: center; animation: tamponner .25s cubic-bezier(.2, 2, .4, 1); }
+.regle { font: 21px/1.05 var(--titre); padding: 5px 7px 3px; background: var(--encre); color: var(--papier); display: flex; gap: 6px; align-items: center; animation: tamponner .25s cubic-bezier(.16, 1, .3, 1); }
 .regle svg { width: 16px; height: 16px; flex: none; }
 .regle small { font: 700 11px var(--texte); margin-left: auto; white-space: nowrap; }
-.evenement { font-size: 13px; line-height: 1.25; border-left: 4px solid var(--encre); padding-left: 7px; animation: glisser .2s ease-out; }
+.evenement { font-size: 13px; line-height: 1.25; border-bottom: 1px dashed var(--encre); padding-bottom: 5px; animation: glisser .2s ease-out; }
 .evenement b { font: 15px var(--titre); letter-spacing: .02em; white-space: nowrap; }
 .evenement .j { font-weight: 700; white-space: nowrap; }
 .evenement svg { width: 11px; height: 11px; vertical-align: -1px; margin-right: 2px; }
