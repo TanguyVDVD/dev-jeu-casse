@@ -66,7 +66,7 @@ export interface Instantane {
 
 export type MessageServeur =
   | { t: 'bienvenue'; code: string; jeton: string; moi: number }
-  | { t: 'salon'; etat: EtatSalon }
+  | { t: 'salon'; etat: EtatSalon; moi: number }
   | { t: 'manche'; arene: string; numero: number; manches: number[]; ids: number[] }
   | Instantane
   | { t: 'finmanche'; vainqueur: number; manches: number[] }

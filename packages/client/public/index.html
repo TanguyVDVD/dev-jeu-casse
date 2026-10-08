@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CASSE — Les règles sont faites pour être cassées</title>
+  <meta name="description" content="Party game à 2-4 joueurs : personne n'a d'arme, on réécrit les règles.">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/polices/anton.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main id="titre" class="ecran">
+    <h1 class="logo" aria-label="CASSE"><span>C</span><span>A</span><span>S</span><span>S</span><span>E</span></h1>
+    <p class="baseline">Les règles sont faites pour être cassées.</p>
+    <form id="entree" class="carte" autocomplete="off">
+      <label for="pseudo">Votre nom de tampon</label>
+      <input id="pseudo" maxlength="12" required placeholder="12 caractères max" spellcheck="false">
+      <div class="rangee">
+        <button type="submit" id="creer">Créer un salon</button>
+        <span class="ou">ou</span>
+        <input id="code" maxlength="4" placeholder="CODE" aria-label="Code du salon" spellcheck="false">
+        <button type="button" id="rejoindre" class="second">Rejoindre</button>
+      </div>
+      <button type="button" id="essai" class="discret">Essai seul contre trois bots</button>
+    </form>
+    <p class="aide">Pousser : marcher dans un bloc · Agripper : <kbd>Maj</kbd> · Dash : <kbd>Espace</kbd> · Émotes : <kbd>1</kbd>–<kbd>4</kbd> · Son : <kbd>M</kbd><br>Déplacement : flèches ou les touches à la place de WASD (ZQSD en AZERTY). Manette reconnue.</p>
+  </main>
+
+  <main id="salon" class="ecran" hidden>
+    <p class="surtitre">Salon</p>
+    <h2 id="codeSalon" class="code"></h2>
+    <div class="rangee centre">
+      <input id="lien" readonly aria-label="Lien d'invitation">
+      <button type="button" id="copier" class="second">Copier le lien</button>
+    </div>
+    <ul id="places" class="places"></ul>
+    <div class="rangee centre">
+      <button type="button" id="pret">Prêt</button>
+      <button type="button" id="plusBot" class="second hote">+ Bot</button>
+      <button type="button" id="moinsBot" class="second hote">− Bot</button>
+      <button type="button" id="lancer" class="hote">Lancer la partie</button>
+    </div>
+    <p class="aide" id="aideSalon">Cliquez une place libre pour changer de couleur. Le tableau garde les victoires de toute la soirée.</p>
+  </main>
+
+  <main id="jeu" class="ecran" hidden>
+    <header id="scores"></header>
+    <div id="scene">
+      <aside id="regles" aria-label="Règles en vigueur"></aside>
+      <div id="cadre"><canvas id="toile"></canvas></div>
+      <aside id="fil" aria-label="Fil d'événements" aria-live="off"></aside>
+      <div id="annonce" aria-live="assertive"></div>
+      <div id="panneau" hidden></div>
+    </div>
+    <footer class="aide">Agripper <kbd>Maj</kbd> · Dash <kbd>Espace</kbd> · <kbd>1</kbd> HA ! <kbd>2</kbd> OUPS <kbd>3</kbd> TRAÎTRE ! <kbd>4</kbd> BIEN JOUÉ · Son <kbd>M</kbd> · Fantôme : poussez encore les blocs !</footer>
+  </main>
+
+  <main id="fin" class="ecran" hidden></main>
+  <div id="toast" role="status"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

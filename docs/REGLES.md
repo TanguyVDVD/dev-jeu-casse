@@ -55,7 +55,7 @@ On n'est jamais coincé : un joueur qui se retrouve dans une case devenue solide
 - **Fantôme** : un mort ne marque plus mais pousse, tire et dashe (sans étourdir). Il réapparaît 3 s après sa mort si aucune règle MORT ne le vise ; sur un point d'apparition sûr, avec 1 s d'invulnérabilité.
 - **Blocs verrouillés** (rivets) : ni poussés ni tirés ; ils bloquent une chaîne.
 - **Chute de mots** : un mot du sac de l'arène tombe toutes les 20 s, annoncé 2 s avant par une ombre.
-- **Disette** : 10 s sans aucune règle POINTS → un bloc POINTS tombe.
+- **Disette** : 10 s sans aucune règle POINTS → un bloc POINTS tombe (tant qu’il y en a moins de 3 en jeu).
 - **Auteur** : le joueur dont le déplacement de bloc fait apparaître une phrase en est l'auteur. Chaque victime de cette règle lui rapporte 3 pts (sauf lui-même) ; les points qu'elle distribue sont comptés dans ses statistiques. Les règles d'origine de l'arène et celles nées d'une chute n'ont pas d'auteur.
 
 ## Actions

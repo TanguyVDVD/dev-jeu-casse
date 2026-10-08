@@ -1,0 +1,129 @@
+@font-face { font-family: Anton; src: url(/polices/anton.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Courier Prime"; src: url(/polices/courier-prime.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Courier Prime"; font-weight: 700; src: url(/polices/courier-prime-gras.woff2) format("woff2"); font-display: swap; }
+
+:root {
+  --papier: #F1E7D3; --trame: #DCCFB4; --encre: #1B1714;
+  --j0: #E2432A; --j1: #2A56C6; --j2: #1E9A68; --j3: #F2B01E;
+  --titre: Anton, Impact, "Arial Narrow", sans-serif;
+  --texte: "Courier Prime", "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--papier) radial-gradient(var(--trame) 1px, transparent 1.4px) 0 0 / 7px 7px;
+  color: var(--encre); font: 16px/1.45 var(--texte); overflow: hidden;
+}
+[hidden] { display: none !important; }
+.ecran { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 20px; text-align: center; }
+h1, h2, h3, p, ul { margin: 0; padding: 0; }
+kbd { font: 700 .85em var(--texte); border: 2px solid var(--encre); padding: 0 5px; background: var(--papier); }
+.aide { font-size: 13px; max-width: 70ch; }
+footer.aide { max-width: none; font-size: 12px; white-space: nowrap; }
+.surtitre { font: 700 14px var(--texte); letter-spacing: .3em; text-transform: uppercase; }
+
+/* --- boutons et champs : aplats, ombre dure hors registre -------------- */
+button {
+  font: 22px/1 var(--titre); letter-spacing: .04em; text-transform: uppercase; color: var(--papier); background: var(--encre);
+  border: 0; padding: 12px 18px 10px; cursor: pointer; box-shadow: 5px 5px 0 var(--j0); transition: transform .06s, box-shadow .06s;
+}
+button:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 var(--j0); }
+button:active { transform: translate(4px, 4px); box-shadow: 1px 1px 0 var(--j0); }
+button.second { background: var(--papier); color: var(--encre); box-shadow: inset 0 0 0 3px var(--encre), 5px 5px 0 var(--encre); }
+button.discret { background: none; color: var(--encre); box-shadow: none; font: 700 15px var(--texte); text-transform: none; letter-spacing: 0; text-decoration: underline; padding: 6px; }
+button:disabled { opacity: .35; cursor: not-allowed; }
+:focus-visible { outline: 3px dashed var(--j1); outline-offset: 3px; }
+input { font: 700 18px var(--texte); color: var(--encre); background: var(--papier); border: 3px solid var(--encre); padding: 9px 10px; min-width: 0; }
+#code { width: 5.2em; text-transform: uppercase; letter-spacing: .2em; text-align: center; }
+#lien { width: min(30em, 60vw); font-size: 14px; }
+label { font: 700 13px var(--texte); text-transform: uppercase; letter-spacing: .15em; text-align: left; }
+.carte { display: flex; flex-direction: column; gap: 12px; padding: 20px; border: 3px solid var(--encre); background: var(--papier); box-shadow: 8px 8px 0 var(--encre); }
+.rangee { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.rangee.centre { justify-content: center; }
+.ou { font-style: italic; }
+
+/* --- logo : cinq caractères de bois, le A a basculé ---------------------- */
+.logo { display: flex; gap: 10px; font: clamp(64px, 13vw, 150px)/1 var(--titre); }
+.logo span { background: var(--encre); color: var(--papier); padding: .06em .16em 0; box-shadow: .07em .07em 0 0 var(--papier), .07em .07em 0 4px var(--j0); }
+.logo span:nth-child(2) { background: var(--j0); transform: rotate(11deg) translateY(.14em); box-shadow: .07em .07em 0 0 var(--papier), .07em .07em 0 4px var(--encre); }
+.baseline { font: 700 clamp(15px, 2vw, 22px) var(--texte); margin-top: clamp(22px, 3.4vw, 48px); }
+
+/* --- salon --------------------------------------------------------------- */
+.code { font: clamp(60px, 11vw, 120px)/1 var(--titre); letter-spacing: .12em; }
+.places { list-style: none; display: grid; grid-template-columns: repeat(4, minmax(120px, 190px)); gap: 14px; }
+.place { border: 3px solid var(--encre); padding: 12px 8px; min-height: 170px; display: flex; flex-direction: column; align-items: center; gap: 4px; background: var(--papier); position: relative; }
+.place.libre { border-style: dashed; cursor: pointer; opacity: .6; }
+.place.libre:hover { opacity: 1; }
+.place.moi { box-shadow: 6px 6px 0 var(--c); }
+.place svg { width: 54px; height: 54px; }
+.place .nom { font: 24px/1.1 var(--titre); text-transform: uppercase; overflow-wrap: anywhere; }
+.place .etat { font-size: 13px; }
+.place .victoires { font: 700 13px var(--texte); margin-top: auto; }
+.place .pretOui { background: var(--encre); color: var(--papier); padding: 0 6px; font-weight: 700; }
+body:not(.hote) .hote { display: none; }
+
+/* --- jeu ----------------------------------------------------------------- */
+#jeu { padding: 8px 12px; gap: 8px; justify-content: flex-start; }
+#scores { display: flex; gap: 12px; align-items: stretch; justify-content: center; width: 100%; }
+.score { display: flex; align-items: center; gap: 8px; border: 3px solid var(--encre); padding: 4px 10px 2px; background: var(--papier); min-width: 150px; box-shadow: 4px 4px 0 var(--c); }
+.score.mort { opacity: .5; }
+.score svg { width: 30px; height: 30px; flex: none; }
+.score .nom { font: 700 13px/1.1 var(--texte); text-align: left; max-width: 9ch; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score .pts { font: 34px/1 var(--titre); margin-left: auto; font-variant-numeric: tabular-nums; }
+.score .manches { display: flex; gap: 3px; }
+.score .manches i { width: 9px; height: 9px; border: 2px solid var(--encre); }
+.score .manches i.g { background: var(--encre); }
+#chrono { font: 46px/1 var(--titre); min-width: 2.2em; align-self: center; font-variant-numeric: tabular-nums; }
+#chrono.bouclage { color: var(--j0); animation: battre .5s steps(2) infinite; }
+@keyframes battre { 50% { transform: scale(1.18); } }
+#scene { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-columns: minmax(150px, 230px) 1fr minmax(150px, 230px); gap: 12px; position: relative; }
+#cadre { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
+#toile { border: 4px solid var(--encre); box-shadow: 7px 7px 0 var(--encre); background: var(--papier); image-rendering: auto; }
+#regles, #fil { text-align: left; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+#regles h3, #fil h3 { font: 700 12px var(--texte); letter-spacing: .25em; text-transform: uppercase; border-bottom: 3px solid var(--encre); padding-bottom: 3px; }
+.regle { font: 21px/1.05 var(--titre); padding: 5px 7px 3px; background: var(--encre); color: var(--papier); display: flex; gap: 6px; align-items: center; animation: tamponner .25s cubic-bezier(.2, 2, .4, 1); }
+.regle svg { width: 16px; height: 16px; flex: none; }
+.regle small { font: 700 11px var(--texte); margin-left: auto; white-space: nowrap; }
+.evenement { font-size: 13px; line-height: 1.25; border-left: 4px solid var(--encre); padding-left: 7px; animation: glisser .2s ease-out; }
+.evenement b { font: 15px var(--titre); letter-spacing: .02em; white-space: nowrap; }
+.evenement .j { font-weight: 700; white-space: nowrap; }
+.evenement svg { width: 11px; height: 11px; vertical-align: -1px; margin-right: 2px; }
+.evenement:nth-child(n+7) { opacity: .45; }
+@keyframes glisser { from { transform: translateX(16px); opacity: 0; } }
+@keyframes tamponner { from { transform: scale(1.5) rotate(-4deg); opacity: 0; } }
+
+#annonce { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+.tampon { text-align: center; transform: rotate(-5deg); animation: frapper .5s both; text-shadow: 5px 5px 0 var(--papier), 9px 9px 0 var(--j0); }
+.tampon small { display: block; font: 700 clamp(14px, 2vw, 24px) var(--texte); letter-spacing: .4em; text-shadow: none; background: var(--encre); color: var(--papier); padding: 3px 14px; width: fit-content; margin: 0 auto 6px; }
+.tampon strong { display: block; font: clamp(50px, 10vw, 150px)/.95 var(--titre); font-weight: 400; }
+.tampon.abroge strong { text-decoration: line-through var(--j0) .1em; }
+.tampon.long { animation-duration: 1.6s; }
+@keyframes frapper { 0% { transform: rotate(-5deg) scale(2.2); opacity: 0; } 18% { transform: rotate(-5deg) scale(.96); opacity: 1; } 28% { transform: rotate(-5deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(-5deg) scale(1.03); } }
+
+#panneau { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; background: rgb(241 231 211 / .88); }
+#panneau h2 { font: clamp(40px, 8vw, 110px)/1 var(--titre); }
+#panneau .compte { font: clamp(80px, 16vw, 200px)/1 var(--titre); color: var(--j0); }
+
+/* --- la une de fin de match ---------------------------------------------- */
+#fin { justify-content: flex-start; overflow: auto; }
+.une { width: min(900px, 100%); border: 4px solid var(--encre); background: var(--papier); box-shadow: 10px 10px 0 var(--encre); padding: 16px 22px 22px; display: flex; flex-direction: column; gap: 12px; }
+.une .manchette { font: 700 13px var(--texte); letter-spacing: .3em; text-transform: uppercase; border-block: 3px double var(--encre); padding: 4px; }
+.une h2 { font: clamp(44px, 9vw, 104px)/.95 var(--titre); text-transform: uppercase; }
+.une h2 em { font-style: normal; color: var(--c); -webkit-text-stroke: 2px var(--encre); }
+.titres { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; text-align: left; }
+.titres li { list-style: none; border-top: 5px solid var(--c); padding-top: 4px; }
+.titres b { display: block; font: 24px/1 var(--titre); text-transform: uppercase; }
+.titres span { font-size: 13px; }
+.titres .j { font-weight: 700; }
+.titres svg { width: 13px; height: 13px; vertical-align: -1px; margin-right: 3px; }
+
+#toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--encre); color: var(--papier); padding: 8px 16px; font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
+#toast.vu { opacity: 1; }
+
+@media (max-width: 900px) {
+  #scene { grid-template-columns: 1fr; }
+  #regles, #fil { position: absolute; top: 4px; width: 42%; pointer-events: none; }
+  #regles { left: 4px; } #fil { right: 4px; }
+  .places { grid-template-columns: repeat(2, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before { animation-duration: .01s !important; transition: none !important; } }

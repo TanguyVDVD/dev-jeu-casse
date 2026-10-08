@@ -13,6 +13,8 @@ export function penser(w: Monde, id: number, mem: MemoireBot): Entree {
   if (!p || w.phase === 'decompte' || w.phase === 'fin') return entree;
   const mortels = (Object.keys(w.tagsObjet) as Objet[]).filter((o) => w.tagsObjet[o].includes('MORT'));
 
+  const mortelEn = (x: number, y: number) => { const o = objetEn(w, x, y); return !!o && mortels.includes(o); };
+
   if (w.tick >= mem.jusqua) {
     mem.jusqua = w.tick + 30 + Math.floor(Math.random() * 60);
     mem.px = mem.py = 0;
@@ -23,10 +25,15 @@ export function penser(w: Monde, id: number, mem: MemoireBot): Entree {
         for (let x = 0; x < largeur(w); x++) {
           const o = objetEn(w, x, y);
           const d = Math.hypot(x + 0.5 - p.x, y + 0.5 - p.y);
+          // inutile de viser un trésor mortel ou cerné par ce qui tue
+          if (mortelEn(x, y) || DIRS.every(([ax, ay]) => mortelEn(x + ax, y + ay))) continue;
           if (o && payants.includes(o) && d < mieux) { mieux = d; mem.bx = x + 0.5; mem.by = y + 0.5; }
         }
     if (mieux === Infinity) {
-      const libres = w.blocs.filter((b) => b.mot && !b.verrou);
+      // si quelque chose tue, une fois sur deux on va déranger un bloc MORT
+      const tous = w.blocs.filter((b) => b.mot && !b.verrou);
+      const tueurs = tous.filter((b) => b.mot === 'MORT');
+      const libres = tueurs.length && w.regles.some((r) => r.prop === 'MORT') && Math.random() < 0.5 ? tueurs : tous;
       const b = libres[Math.floor(Math.random() * libres.length)];
       const [dx, dy] = DIRS[Math.floor(Math.random() * 4)];
       if (b) { mem.bx = b.x + 0.5 - dx * 0.95; mem.by = b.y + 0.5 - dy * 0.95; mem.px = dx; mem.py = dy; }

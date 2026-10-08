@@ -8,7 +8,7 @@ export const CONFIG = {
   regle: { armement: 1 },
   props: { rapide: 1.5, lent: 0.55, geant: 1.6, geantChaine: 2, geantObjet: 0.5, aimantRayon: 4, aimantForce: 2.4 },
   points: { passif: 2, contact: 4, victime: 3 },
-  chute: { periode: 20, ombre: 2, disette: 10 },
+  chute: { periode: 20, ombre: 2, disette: 10, pointsMax: 3 },
   contact: 0.06,
   reseau: { interpolationMs: 100, placeGardee: 60, messagesParSeconde: 80, octetsMax: 512 },
   salon: { max: 50, joueurs: 4, pseudoMax: 12, emoteRecharge: 0.8 },

@@ -393,7 +393,11 @@ function chutes(w: Monde): void {
   }
   const attendu = w.regles.some((r) => r.prop === 'POINTS') || w.ombres.some((o) => o.mot === 'POINTS');
   w.disette = attendu ? 0 : w.disette + 1;
-  if (w.disette >= ticks(CONFIG.chute.disette)) { w.disette = 0; planifierChute(w, 'POINTS'); }
+  if (w.disette >= ticks(CONFIG.chute.disette)) {
+    w.disette = 0;
+    // pas de pluie de POINTS : au-delà de quelques blocs en jeu, c'est aux joueurs de composer la phrase
+    if (w.blocs.filter((b) => b.mot === 'POINTS').length < CONFIG.chute.pointsMax) planifierChute(w, 'POINTS');
+  }
 }
 
 // --- le pas ---------------------------------------------------------------
