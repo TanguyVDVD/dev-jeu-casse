@@ -16,13 +16,14 @@ const LETTRES = 'BCDFGHJKLMNPRSTVXZ'; // sans voyelles : pas de gros mots, pas d
 const NOMS_BOTS = ['Plomb', 'Bourdon', 'Lézarde', 'Mastic'];
 const STATS_VIDES = (): Stats => ({ creees: 0, cassees: 0, victimes: 0, morts: 0, dashs: 0, pousses: 0, generes: 0 });
 
+const s = (n: number) => (n > 1 ? 's' : '');
 const TITRES: [keyof Stats, string, (n: number) => string][] = [
-  ['creees', 'Le Législateur', (n) => `${n} règles promulguées`],
-  ['cassees', 'Le Vandale', (n) => `${n} règles abrogées`],
-  ['victimes', 'Le Bourreau', (n) => `${n} victimes`],
+  ['creees', 'Le Législateur', (n) => `${n} règle${s(n)} promulguée${s(n)}`],
+  ['cassees', 'Le Vandale', (n) => `${n} règle${s(n)} abrogée${s(n)}`],
+  ['victimes', 'Le Bourreau', (n) => `${n} victime${s(n)}`],
   ['morts', 'Le Paillasson', (n) => `mort ${n} fois`],
-  ['dashs', 'Le Bélier', (n) => `${n} coups d’épaule`],
-  ['pousses', 'Le Déménageur', (n) => `${n} blocs déplacés`],
+  ['dashs', 'Le Bélier', (n) => `${n} coup${s(n)} d’épaule`],
+  ['pousses', 'Le Déménageur', (n) => `${n} bloc${s(n)} déplacé${s(n)}`],
   ['generes', 'Le Mécène', (n) => `${Math.round(n)} points distribués par ses règles`],
 ];
 
