@@ -116,14 +116,16 @@ const DESSIN_TUILE: Record<Exclude<Objet, 'CAISSE'>, (c: Ctx, x: number, y: numb
 };
 
 /** Les propriétés d'un objet se lisent sur lui : cadre épais si solide, halo si géant, icônes sinon. */
-function marques(c: Ctx, x: number, y: number, tags: Prop[], dense: boolean): void {
+function marques(c: Ctx, x: number, y: number, tags: Prop[], dense: boolean, enCoin = false): void {
   if (a(tags, 'solide')) { c.strokeStyle = ENCRE; c.lineWidth = 0.07; c.strokeRect(x + 0.035, y + 0.035, 0.93, 0.93); }
   const visibles = tags.filter((t) => t !== 'SOLIDE' && t !== 'GEANT' && t !== 'INVISIBLE');
   if (!visibles.length || (dense && (x + y) % 2)) return;
   visibles.slice(0, 4).forEach((t, i) => {
     const n = Math.min(visibles.length, 4);
     const cx = x + 0.5 + (n > 1 ? (i % 2 ? 0.22 : -0.22) : 0), cy = y + 0.5 + (n > 2 ? (i < 2 ? -0.22 : 0.22) : 0);
-    const taille = n > 1 ? 0.34 : 0.5;
+    const taille = enCoin ? 0.26 : n > 1 ? 0.34 : 0.5;
+    // sur un objet qui a déjà son dessin (la couronne), les marques se rangent sur le bord haut
+    if (enCoin) { c.fillStyle = PAPIER; c.strokeStyle = ENCRE; c.lineWidth = 0.03; c.beginPath(); c.arc(x + 0.86 - i * 0.3, y + 0.14, 0.17, 0, 7); c.fill(); c.stroke(); icone(c, t, x + 0.86 - i * 0.3, y + 0.14, taille, ENCRE, PAPIER); return; }
     c.fillStyle = PAPIER; c.beginPath(); c.arc(cx, cy, taille * 0.72, 0, 7); c.fill();
     icone(c, t, cx, cy, taille, ENCRE, PAPIER);
   });
@@ -277,7 +279,7 @@ export function dessiner(cv: HTMLCanvasElement, v: Vue, dt: number): void {
     if (a(tags, 'invisible')) continue;
     if (tags.includes('GEANT')) halo(c, x, y);
     DESSIN_TUILE[o](c, x, y, tags, t);
-    marques(c, x, y, tags, o === 'LAVE');
+    marques(c, x, y, tags, o === 'LAVE', o === 'COURONNE');
   }
 
   for (let i = empreintes.length - 1; i >= 0; i--) {

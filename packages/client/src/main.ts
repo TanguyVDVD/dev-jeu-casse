@@ -34,6 +34,7 @@ let tampons: { t: number; j: Joueur[] }[] = [];
 let finRecue = false;
 let bouclageAnnonce = false;
 let dernierScore = 0;
+let adresse = location.origin; // remplacée par l'adresse du tunnel quand le serveur la connaît
 let inscrit = false; // le serveur nous a placés dans un salon sur cette connexion
 
 const pseudoDe = (c: number) => salon?.places.find((p) => p.c === c)?.pseudo ?? '?';
@@ -115,7 +116,7 @@ function afficherSalon(): void {
   const hote = salon.places.find((p) => p.c === moi)?.hote ?? false;
   document.body.classList.toggle('hote', hote);
   $('codeSalon').textContent = salon.code;
-  $<HTMLInputElement>('lien').value = `${location.origin}/?s=${salon.code}`;
+  $<HTMLInputElement>('lien').value = `${adresse}/?s=${salon.code}`;
   $('places').replaceChildren(...[0, 1, 2, 3].map((c) => {
     const p = salon!.places.find((k) => k.c === c);
     const li = el('li', `place${p ? '' : ' libre'}${c === moi ? ' moi' : ''}`, svgForme(c));
@@ -448,5 +449,6 @@ if (/^[A-Z]{4}$/.test(codeUrl)) {
   if (session?.code === codeUrl) connecter({ t: 'rejoindre', ...session });
   else session = null;
 } else session = null;
+fetch('/adresse').then((r) => r.json()).then((r: { url?: string }) => { if (typeof r.url === 'string') { adresse = r.url; afficherSalon(); } }).catch(() => { /* pas de tunnel : on garde l'origine */ });
 void document.fonts.load('100px Anton');
 requestAnimationFrame(image);

@@ -93,10 +93,10 @@ body:not(.hote) .hote { display: none; }
 @keyframes tamponner { from { transform: scale(1.5) rotate(-4deg); opacity: 0; } }
 
 #annonce { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
-.tampon { text-align: center; transform: rotate(-5deg); animation: frapper .5s both; text-shadow: 5px 5px 0 var(--papier), 9px 9px 0 var(--j0); }
-.tampon small { display: block; font: 700 clamp(14px, 2vw, 24px) var(--texte); letter-spacing: .4em; text-shadow: none; background: var(--encre); color: var(--papier); padding: 3px 14px; width: fit-content; margin: 0 auto 6px; }
-.tampon strong { display: block; font: clamp(50px, 10vw, 150px)/.95 var(--titre); font-weight: 400; }
-.tampon.abroge strong { text-decoration: line-through var(--j0) .1em; }
+.tampon { text-align: center; transform: rotate(-5deg); animation: frapper .5s both; }
+.tampon small { display: block; font: 700 clamp(14px, 2vw, 24px) var(--texte); letter-spacing: .4em; text-transform: uppercase; text-shadow: none; background: var(--encre); color: var(--papier); padding: 3px 14px; width: fit-content; margin: 0 auto 6px; }
+.tampon strong { display: block; font: clamp(50px, 10vw, 150px)/.95 var(--titre); font-weight: 400; width: fit-content; margin: 0 auto; padding: .1em .2em .02em; background: var(--papier); box-shadow: 0 0 0 6px var(--encre), 14px 14px 0 6px var(--j0); }
+.tampon.abroge strong { text-decoration: line-through var(--j0) .12em; box-shadow: 0 0 0 6px var(--j0), 14px 14px 0 6px var(--encre); }
 .tampon.long { animation-duration: 1.6s; }
 @keyframes frapper { 0% { transform: rotate(-5deg) scale(2.2); opacity: 0; } 18% { transform: rotate(-5deg) scale(.96); opacity: 1; } 28% { transform: rotate(-5deg) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(-5deg) scale(1.03); } }
 
