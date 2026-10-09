@@ -1,7 +1,7 @@
 // Toutes les valeurs d'équilibrage. Distances en cases, durées en secondes.
 export const CONFIG = {
   tickHz: 30,
-  manche: { duree: 90, decompte: 3, aide: 9, pause: 6, aGagner: 3, mortSubiteMax: 30, bouclage: 15 },
+  manche: { duree: 90, decompte: 7, aide: 20, pause: 6, aGagner: 3, mortSubiteMax: 30, bouclage: 15 },
   joueur: { vitesse: 5.2, demi: 0.32, accel: 70, accelGlisse: 5, invulnerable: 1.5, facteurPorte: 0.9, facteurFantome: 1.2 },
   dash: { vitesse: 15, duree: 0.16, recharge: 1.6, etourdi: 0.5, recul: 12 },
   caisse: { delaiPousse: 0.13 },

@@ -2,7 +2,7 @@ import {
   ARENES, CONFIG, DT, bouger, creerMonde, glisser, libelle, phrase, replique, ticks,
   type Entree, type EtatSalon, type Evt, type Instantane, type Joueur, type MessageClient, type MessageServeur, type Monde,
 } from '@casse/shared';
-import { SONS, basculerSon, battreMusique, lire as lireLoi, musique, reveiller } from './audio';
+import { PISTES, SONS, battreMusique, couper, estCoupe, lire as lireLoi, musique, reveiller } from './audio';
 import { lire, surAppui } from './entrees';
 import { COULEUR, ENCRE, svgForme } from './formes';
 import { bulle, dessiner, eclat, flotter, geler, secouer, viderEffets } from './rendu';
@@ -463,10 +463,28 @@ $('copier').onclick = async () => {
 addEventListener('pointerdown', reveiller);
 addEventListener('keydown', reveiller);
 surAppui((code) => {
-  if (code === 'KeyM') toast(basculerSon() ? 'Son coupé' : 'Son rétabli');
+  if (code === 'KeyM') { // tout couper, ou tout rétablir si tout l'est déjà
+    const v = !PISTES.every(estCoupe);
+    for (const p of PISTES) couper(p, v);
+    afficherSon();
+    toast(v ? 'Son coupé' : 'Son rétabli');
+  }
   const n = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(code);
   if (n >= 0 && !$('jeu').hidden) envoyer({ t: 'emote', n });
 });
+
+// bruitages, musique de fond et voix de l'annonceur se coupent séparément
+const NOM_PISTE = { sons: 'Bruitages', musique: 'Musique', voix: 'Voix' };
+function afficherSon(): void {
+  $('son').replaceChildren(...PISTES.map((p) => {
+    const b = el('button', estCoupe(p) ? 'coupe' : '', NOM_PISTE[p]);
+    b.setAttribute('aria-pressed', String(!estCoupe(p)));
+    b.title = `${estCoupe(p) ? 'Rétablir' : 'Couper'} : ${NOM_PISTE[p].toLowerCase()}`;
+    b.onclick = () => { reveiller(); couper(p, !estCoupe(p)); afficherSon(); };
+    return b;
+  }));
+}
+afficherSon();
 
 $<HTMLInputElement>('pseudo').value = localStorage.getItem('casse.pseudo') ?? '';
 const codeUrl = new URLSearchParams(location.search).get('s')?.toUpperCase() ?? '';

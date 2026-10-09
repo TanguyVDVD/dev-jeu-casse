@@ -110,7 +110,7 @@ Tout mot ajouté plus tard doit passer ce test : **son effet se voit sur un joue
 
 ## Match
 
-Manche de 90 s après 3 s de décompte (9 s avant la première, le temps de lire l'aide). Pendant les **15 dernières secondes** (« bouclage »), les points de la Loi d'or comptent double et les sceaux durent deux fois moins longtemps. Égalité en tête : mort subite, le premier seul en tête gagne (30 s max, puis tirage au sort entre ex æquo). Premier à 3 manches. Les arènes tournent.
+Manche de 90 s après 7 s de décompte, le temps de lire l'arène et ses lois de départ (20 s avant la première, pour l'aide). Pendant les **15 dernières secondes** (« bouclage »), les points de la Loi d'or comptent double et les sceaux durent deux fois moins longtemps. Égalité en tête : mort subite, le premier seul en tête gagne (30 s max, puis tirage au sort entre ex æquo). Premier à 3 manches. Les arènes tournent.
 
 ## Arènes
 

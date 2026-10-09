@@ -24,7 +24,8 @@ Le port 8080 n’est ouvert que sur votre machine (`http://localhost:8080`) : to
 | Dash (étourdit, fait lâcher mot et couronne) | `Espace` ou `J` | A |
 | Prendre la couronne, pousser une caisse | marcher dessus, marcher dedans | idem |
 | Émotes | `1` `2` `3` `4` | Y, LB, Start, Select |
-| Couper le son | `M` | |
+| Couper tout le son | `M` | |
+| Couper séparément bruitages, musique ou voix de l'annonceur | boutons en bas à gauche | |
 
 Chaque arène a trois ou quatre **châssis** : des phrases `SUJET EST PROPRIÉTÉ` écrites en grand sur le sol. La **Loi d'or** (`… EST POINTS`) dit ce qui rapporte des points. Remplacer un mot change la loi : elle s'arme une seconde, puis frappe, et le mot posé est scellé 5 secondes. Votre couleur est un mot comme les autres : qui la tient peut écrire une loi sur vous.
 

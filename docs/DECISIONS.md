@@ -37,7 +37,8 @@ L'état d'avant la refonte des lois est conservé sous l'étiquette git `avant-r
 - **Décret affiché en haut de l'arène**, 0,95 s, et un décret chasse l'autre : en plein centre et en file d'attente, il cachait la mêlée la moitié du temps avec des bots.
 - **Le Prote lit la loi** par la synthèse vocale du navigateur (voix française, grave, rapide), coupée avec `M`. Qualité variable selon le système : à juger en soirée, une ligne à retirer dans `audio.ts` sinon.
 - **Leader et dernier marqués par une pastille encre** au-dessus du joueur, sauf quand tout le monde l'est (début de manche).
-- **Aide de cinq lignes pendant le décompte de la première manche**, allongé à 9 s.
+- **Aide de cinq lignes pendant le décompte de la première manche**, qui dure 20 s ; 7 s avant les manches suivantes (3 s et 9 s ne laissaient pas le temps de lire, retour de jeu).
+- **Trois coupures de son indépendantes** (bruitages, musique, voix du Prote), en bas à gauche de l'écran, retenues d'une session à l'autre ; `M` coupe ou rétablit tout.
 - **Écran-titre, salon, une de fin, émotes, musique** : inchangés. Les titres de fin suivent les nouvelles statistiques (lois écrites, lancers réussis, mots attrapés au vol, points volés).
 
 ## Bots

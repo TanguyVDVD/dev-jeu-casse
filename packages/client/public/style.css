@@ -135,6 +135,9 @@ body:not(.hote) .hote { display: none; }
 
 #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--encre); color: var(--papier); padding: 8px 16px; font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
 #toast.vu { opacity: 1; }
+#son { position: fixed; left: 10px; bottom: 8px; display: flex; gap: 6px; }
+#son button { font: 700 12px var(--texte); text-transform: none; letter-spacing: 0; padding: 4px 8px; background: var(--papier); color: var(--encre); box-shadow: inset 0 0 0 2px var(--encre); }
+#son button.coupe { text-decoration: line-through; opacity: .55; }
 
 @media (max-width: 900px) {
   #scene { grid-template-columns: 1fr; }

@@ -1,8 +1,27 @@
 // Tout le son est synthétisé : bruit filtré et ondes courtes, façon atelier d'imprimerie.
 let ctx: AudioContext | undefined;
 let sortie: GainNode;
+let sortieMusique: GainNode;
+/** où va le prochain son : les bruitages par défaut, la musique le temps de sa mesure */
+let cible: GainNode;
 let bruitTampon: AudioBuffer;
-let muet = false;
+
+export const PISTES = ['sons', 'musique', 'voix'] as const;
+export type Piste = (typeof PISTES)[number];
+/** ce que le joueur a coupé, retenu d'une session à l'autre */
+const coupe: Record<Piste, boolean> = { sons: false, musique: false, voix: false };
+try { Object.assign(coupe, JSON.parse(localStorage.getItem('casse.son') ?? '{}')); } catch { /* préférence illisible : tout est audible */ }
+
+function regler(): void {
+  if (ctx) { sortie.gain.value = coupe.sons ? 0 : 0.5; sortieMusique.gain.value = coupe.musique ? 0 : 0.5; }
+  if (coupe.voix && 'speechSynthesis' in window) speechSynthesis.cancel();
+}
+export const estCoupe = (piste: Piste) => coupe[piste];
+export function couper(piste: Piste, v: boolean): void {
+  coupe[piste] = v;
+  try { localStorage.setItem('casse.son', JSON.stringify(coupe)); } catch { /* navigation privée : le réglage vaut pour cette page */ }
+  regler();
+}
 
 /** À appeler sur un geste de l'utilisateur (les navigateurs bloquent l'audio avant). */
 export function reveiller(): void {
@@ -10,9 +29,11 @@ export function reveiller(): void {
   try {
     ctx = new AudioContext();
   } catch { return; } // pas d'audio : le jeu reste jouable
-  sortie = ctx.createGain();
-  sortie.gain.value = 0.5;
+  cible = sortie = ctx.createGain();
+  sortieMusique = ctx.createGain();
   sortie.connect(ctx.destination);
+  sortieMusique.connect(ctx.destination);
+  regler();
   bruitTampon = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const d = bruitTampon.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
@@ -20,24 +41,18 @@ export function reveiller(): void {
 
 /** Le Prote lit la loi à voix haute, quand le navigateur a une voix française. */
 export function lire(texte: string): void {
-  if (muet || !('speechSynthesis' in window)) return;
+  if (coupe.voix || !('speechSynthesis' in window)) return;
   const u = new SpeechSynthesisUtterance(texte.toLowerCase());
   u.lang = 'fr-FR'; u.rate = 1.25; u.pitch = 0.6; u.volume = 0.9;
   speechSynthesis.cancel(); // une loi chasse l'autre : il ne prend jamais de retard
   speechSynthesis.speak(u);
 }
 
-export function basculerSon(): boolean {
-  muet = !muet;
-  if (ctx) sortie.gain.value = muet ? 0 : 0.5;
-  return muet;
-}
-
 function enveloppe(vol: number, t: number, duree: number): GainNode {
   const g = ctx!.createGain();
   g.gain.setValueAtTime(vol, t);
   g.gain.exponentialRampToValueAtTime(0.001, t + duree);
-  g.connect(sortie);
+  g.connect(cible);
   return g;
 }
 
@@ -117,6 +132,7 @@ export function battreMusique(): void {
   if (!ctx || niveau < 0) return;
   const duree = 60 / (niveau === 2 ? 150 : 114) / 4;
   if (prochainPas < ctx.currentTime - 0.5) prochainPas = ctx.currentTime; // onglet resté en arrière-plan
+  cible = sortieMusique;
   while (prochainPas < ctx.currentTime + 0.12) {
     const dans = Math.max(0, prochainPas - ctx.currentTime), p = pasMusique % 16;
     if (p % 4 === 0) ton(105, 0.14, { vers: 42, vol: 0.4, dans });
@@ -127,4 +143,5 @@ export function battreMusique(): void {
     prochainPas += duree;
     pasMusique++;
   }
+  cible = sortie;
 }
