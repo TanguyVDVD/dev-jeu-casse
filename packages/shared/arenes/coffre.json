@@ -1,134 +1,115 @@
 {
  "id": "coffre",
  "nom": "Le Coffre",
- "description": "Les couronnes sont au coffre. Pour entrer, il faut abroger les murs… pour tout le monde.",
+ "description": "La couronne est au coffre, et elle pèse. En bas, une loi sur son île de lave : on ne l'atteint qu'au lancer.",
  "carte": [
-  "..................",
-  "..................",
-  ".....MMMMMMMM.....",
-  ".....M......M.....",
-  ".LL..M..KK..M..LL.",
-  ".LL..M......M..LL.",
-  ".LL..M..KK..M..LL.",
-  ".....M......M.....",
-  ".....MMMMMMMM.....",
-  "..................",
-  ".................."
+  "......................",
+  "......................",
+  "......MMMM..MMMM......",
+  "......M........M......",
+  "......M........M......",
+  "..........K...........",
+  "......M........M......",
+  "......M........M......",
+  "......MMMM..MMMM......",
+  "......................",
+  "........LLLLLLL.......",
+  "........L.....L.......",
+  "........LLLLLLL......."
  ],
- "blocs": [
+ "spawns": [
+  [
+   1,
+   1
+  ],
+  [
+   20,
+   1
+  ],
+  [
+   1,
+   11
+  ],
+  [
+   20,
+   11
+  ]
+ ],
+ "chassis": [
   {
-   "x": 1,
-   "y": 0,
-   "mots": [
-    "MUR",
-    "EST",
-    "SOLIDE"
-   ]
+   "x": 8,
+   "y": 3,
+   "sujet": "COURONNE",
+   "prop": "POINTS"
   },
   {
-   "x": 7,
+   "x": 0,
    "y": 5,
-   "mots": [
-    "COURONNE",
-    "EST",
-    "POINTS"
-   ],
-   "verrou": true
+   "sujet": "DERNIER",
+   "prop": "VOLEUR"
   },
   {
-   "x": 7,
-   "y": 9,
-   "mots": [
-    "LEADER",
-    "EST",
-    "LENT"
-   ]
-  },
-  {
-   "x": 14,
-   "y": 9,
-   "mots": [
-    "POINTS"
-   ]
-  },
-  {
-   "x": 16,
-   "y": 10,
-   "mots": [
-    "MORT"
-   ]
-  },
-  {
-   "x": 3,
-   "y": 3,
-   "mots": [
-    "EST"
-   ]
-  },
-  {
-   "x": 3,
-   "y": 9,
-   "mots": [
-    "LAVE"
-   ]
-  },
-  {
-   "x": 14,
-   "y": 3,
-   "mots": [
-    "TOUS"
-   ]
-  },
-  {
-   "x": 1,
-   "y": 9,
-   "mots": [
-    "INVISIBLE"
-   ]
-  },
-  {
-   "x": 16,
-   "y": 1,
-   "mots": [
-    "GEANT"
-   ]
+   "x": 17,
+   "y": 5,
+   "sujet": "COURONNE",
+   "prop": "LENT"
   },
   {
    "x": 9,
-   "y": 1,
-   "mots": [
-    "AIMANT"
-   ]
+   "y": 11,
+   "sujet": "LAVE",
+   "prop": "MORT"
   }
  ],
- "spawns": [
-  [1, 2],
-  [16, 3],
-  [1, 8],
-  [16, 8]
- ],
  "mots": [
-  "EST",
-  "EST",
-  "MORT",
-  "POINTS",
-  "SOLIDE",
-  "RAPIDE",
-  "LENT",
-  "GEANT",
+  {
+   "x": 3,
+   "y": 2,
+   "mot": "INVISIBLE"
+  },
+  {
+   "x": 18,
+   "y": 2,
+   "mot": "LEADER"
+  },
+  {
+   "x": 3,
+   "y": 9,
+   "mot": "TOUS"
+  },
+  {
+   "x": 18,
+   "y": 9,
+   "mot": "RAPIDE"
+  },
+  {
+   "x": 4,
+   "y": 11,
+   "mot": "MUR"
+  },
+  {
+   "x": 17,
+   "y": 11,
+   "mot": "LAVE"
+  },
+  {
+   "x": 11,
+   "y": 0,
+   "mot": "INVERSE"
+  }
+ ],
+ "pioche": [
+  "DOUBLE",
   "GLISSANT",
-  "AIMANT",
+  "GEANT",
+  "LENT",
+  "VOLEUR",
+  "INVERSE",
+  "MORT",
   "INVISIBLE",
-  "ROUGE",
-  "BLEU",
-  "VERT",
-  "JAUNE",
   "TOUS",
+  "RAPIDE",
   "LEADER",
-  "DERNIER",
-  "LAVE",
-  "MUR",
-  "CAISSE",
-  "COURONNE"
+  "DERNIER"
  ]
 }

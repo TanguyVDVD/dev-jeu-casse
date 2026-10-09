@@ -1,19 +1,20 @@
 export const COULEURS = ['ROUGE', 'BLEU', 'VERT', 'JAUNE'] as const;
-export const OBJETS = ['LAVE', 'MUR', 'CAISSE', 'COURONNE'] as const;
-export const SUJETS = [...COULEURS, 'TOUS', 'LEADER', 'DERNIER', ...OBJETS] as const;
-export const PROPS = ['MORT', 'POINTS', 'SOLIDE', 'RAPIDE', 'LENT', 'GEANT', 'GLISSANT', 'AIMANT', 'INVISIBLE'] as const;
+export const GROUPES = ['TOUS', 'LEADER', 'DERNIER'] as const;
+export const CHOSES = ['COURONNE', 'LAVE', 'CAISSE', 'MUR'] as const;
+/** POINTS est gravé dans la Loi d'or : il n'existe jamais en mot libre. */
+export const PROPS = ['POINTS', 'MORT', 'LENT', 'RAPIDE', 'GEANT', 'GLISSANT', 'INVERSE', 'INVISIBLE', 'DOUBLE', 'VOLEUR'] as const;
 
-export type Objet = (typeof OBJETS)[number];
-export type Sujet = (typeof SUJETS)[number];
+export type Chose = (typeof CHOSES)[number];
+export type Sujet = (typeof COULEURS)[number] | (typeof GROUPES)[number] | Chose;
 export type Prop = (typeof PROPS)[number];
-export type Mot = Sujet | Prop | 'EST';
+export type Mot = Sujet | Prop;
+export type Famille = 'couleur' | 'groupe' | 'chose' | 'prop';
 
-export const estSujet = (m: unknown): m is Sujet => SUJETS.includes(m as Sujet);
-export const estProp = (m: unknown): m is Prop => PROPS.includes(m as Prop);
-export const estObjet = (m: unknown): m is Objet => OBJETS.includes(m as Objet);
-export const estMot = (m: unknown): m is Mot => m === 'EST' || estSujet(m) || estProp(m);
+const FAMILLES: [Famille, readonly string[]][] = [['couleur', COULEURS], ['groupe', GROUPES], ['chose', CHOSES], ['prop', PROPS]];
+export const famille = (m: unknown): Famille | undefined => FAMILLES.find(([, mots]) => mots.includes(m as string))?.[0];
+export const estMot = (m: unknown): m is Mot => !!famille(m);
 
 // Les identifiants restent en ASCII ; seul l'affichage porte les accents.
-const LIBELLES: Partial<Record<Mot, string>> = { GEANT: 'GÉANT' };
+const LIBELLES: Partial<Record<Mot, string>> = { GEANT: 'GÉANT', INVERSE: 'INVERSÉ' };
 export const libelle = (m: Mot) => LIBELLES[m] ?? m;
-export const libelleRegle = (id: string) => id.split(' ').map((m) => libelle(m as Mot)).join(' ');
+export const phrase = (l: { sujet: Sujet; prop: Prop }) => `${libelle(l.sujet)} EST ${libelle(l.prop)}`;

@@ -1,127 +1,105 @@
 {
  "id": "rotative",
  "nom": "La Rotative",
- "description": "Deux bandes de lave patinoire et des caisses qui valent de l'or : on déménage ses points.",
+ "description": "Trois caisses pour quatre : qui en touche une marque. Deux bandes de lave patinoire gardent les gros mots.",
  "carte": [
   "..................",
   "..LLLLLLLLLLLLLL..",
   "..................",
   "....C........C....",
   "..................",
-  "M.......CC.......M",
+  "........C.........",
   "..................",
-  "....C........C....",
+  "..................",
   "..................",
   "..LLLLLLLLLLLLLL..",
   ".................."
  ],
- "blocs": [
+ "spawns": [
+  [
+   1,
+   2
+  ],
+  [
+   16,
+   2
+  ],
+  [
+   1,
+   8
+  ],
+  [
+   16,
+   8
+  ]
+ ],
+ "chassis": [
   {
-   "x": 7,
-   "y": 0,
-   "mots": [
-    "LAVE",
-    "EST",
-    "GLISSANT"
-   ],
-   "verrou": true
-  },
-  {
-   "x": 7,
+   "x": 6,
    "y": 3,
-   "mots": [
-    "CAISSE",
-    "EST",
-    "SOLIDE"
-   ]
+   "sujet": "CAISSE",
+   "prop": "POINTS"
   },
   {
-   "x": 7,
+   "x": 1,
    "y": 7,
-   "mots": [
-    "CAISSE",
-    "EST",
-    "POINTS"
-   ]
-  },
-  {
-   "x": 2,
-   "y": 5,
-   "mots": [
-    "MORT"
-   ]
-  },
-  {
-   "x": 15,
-   "y": 5,
-   "mots": [
-    "EST"
-   ]
-  },
-  {
-   "x": 5,
-   "y": 5,
-   "mots": [
-    "RAPIDE"
-   ]
+   "sujet": "LAVE",
+   "prop": "GLISSANT"
   },
   {
    "x": 12,
-   "y": 5,
-   "mots": [
-    "LEADER"
-   ]
-  },
-  {
-   "x": 9,
-   "y": 2,
-   "mots": [
-    "TOUS"
-   ]
-  },
-  {
-   "x": 15,
    "y": 7,
-   "mots": [
-    "GEANT"
-   ]
-  },
-  {
-   "x": 2,
-   "y": 8,
-   "mots": [
-    "LAVE"
-   ]
+   "sujet": "DERNIER",
+   "prop": "RAPIDE"
   }
  ],
- "spawns": [
-  [0, 2],
-  [17, 2],
-  [0, 8],
-  [17, 8]
- ],
  "mots": [
-  "EST",
-  "EST",
-  "MORT",
-  "POINTS",
-  "SOLIDE",
-  "RAPIDE",
+  {
+   "x": 9,
+   "y": 10,
+   "mot": "MORT"
+  },
+  {
+   "x": 8,
+   "y": 0,
+   "mot": "DOUBLE"
+  },
+  {
+   "x": 3,
+   "y": 5,
+   "mot": "INVERSE"
+  },
+  {
+   "x": 14,
+   "y": 5,
+   "mot": "LEADER"
+  },
+  {
+   "x": 8,
+   "y": 7,
+   "mot": "TOUS"
+  },
+  {
+   "x": 5,
+   "y": 2,
+   "mot": "LAVE"
+  },
+  {
+   "x": 12,
+   "y": 2,
+   "mot": "CAISSE"
+  }
+ ],
+ "pioche": [
   "LENT",
   "GEANT",
-  "GLISSANT",
-  "AIMANT",
-  "INVISIBLE",
-  "ROUGE",
-  "BLEU",
-  "VERT",
-  "JAUNE",
   "TOUS",
+  "MORT",
+  "RAPIDE",
+  "INVERSE",
   "LEADER",
-  "DERNIER",
-  "LAVE",
-  "MUR",
-  "CAISSE",
-  "COURONNE"
+  "DOUBLE",
+  "GLISSANT",
+  "DERNIER"
  ]
 }

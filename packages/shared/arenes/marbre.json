@@ -1,127 +1,97 @@
 {
  "id": "marbre",
  "nom": "Le Marbre",
- "description": "Une mare de lave, une couronne au milieu. Tout le monde veut la même case.",
+ "description": "Une couronne, quatre flaques de lave. Qui porte la couronne marque ; tout le monde veut la même tête.",
  "carte": [
   "..................",
   "..................",
-  "....MM......MM....",
-  "....M........M....",
-  "......LLLLL.......",
-  "......LLKLL.......",
-  "......LLLLL.......",
-  "....M........M....",
-  "....MM......MM....",
+  "....L........L....",
+  "....L........L....",
+  "........MM........",
+  "........K.........",
+  "........MM........",
+  "....L........L....",
+  "....L........L....",
   "..................",
   ".................."
  ],
- "blocs": [
+ "spawns": [
+  [
+   1,
+   1
+  ],
+  [
+   16,
+   1
+  ],
+  [
+   1,
+   9
+  ],
+  [
+   16,
+   9
+  ]
+ ],
+ "chassis": [
   {
-   "x": 0,
+   "x": 6,
    "y": 0,
-   "mots": [
-    "MUR",
-    "EST",
-    "SOLIDE"
-   ],
-   "verrou": true
+   "sujet": "COURONNE",
+   "prop": "POINTS"
   },
   {
-   "x": 7,
-   "y": 1,
-   "mots": [
-    "LAVE",
-    "EST",
-    "MORT"
-   ]
+   "x": 1,
+   "y": 5,
+   "sujet": "LAVE",
+   "prop": "MORT"
   },
   {
-   "x": 7,
-   "y": 9,
-   "mots": [
-    "COURONNE",
-    "EST",
-    "POINTS"
-   ]
-  },
+   "x": 12,
+   "y": 5,
+   "sujet": "LEADER",
+   "prop": "LENT"
+  }
+ ],
+ "mots": [
   {
    "x": 2,
-   "y": 5,
-   "mots": [
-    "TOUS"
-   ]
+   "y": 3,
+   "mot": "TOUS"
   },
   {
    "x": 15,
-   "y": 5,
-   "mots": [
-    "EST"
-   ]
+   "y": 3,
+   "mot": "RAPIDE"
   },
   {
-   "x": 3,
+   "x": 9,
    "y": 9,
-   "mots": [
-    "LENT"
-   ]
+   "mot": "GEANT"
   },
   {
-   "x": 14,
-   "y": 1,
-   "mots": [
-    "RAPIDE"
-   ]
+   "x": 2,
+   "y": 7,
+   "mot": "MUR"
   },
   {
-   "x": 14,
-   "y": 9,
-   "mots": [
-    "LEADER"
-   ]
+   "x": 15,
+   "y": 7,
+   "mot": "LAVE"
   },
   {
-   "x": 3,
+   "x": 9,
    "y": 2,
-   "mots": [
-    "EST"
-   ]
-  },
-  {
-   "x": 16,
-   "y": 9,
-   "mots": [
-    "DERNIER"
-   ]
+   "mot": "COURONNE"
   }
  ],
- "spawns": [
-  [1, 3],
-  [16, 3],
-  [1, 7],
-  [16, 7]
- ],
- "mots": [
-  "EST",
-  "EST",
+ "pioche": [
+  "DERNIER",
   "MORT",
-  "POINTS",
-  "SOLIDE",
   "RAPIDE",
+  "TOUS",
   "LENT",
   "GEANT",
-  "GLISSANT",
-  "AIMANT",
-  "INVISIBLE",
-  "ROUGE",
-  "BLEU",
-  "VERT",
-  "JAUNE",
-  "TOUS",
-  "LEADER",
-  "DERNIER",
-  "LAVE",
-  "MUR",
-  "CAISSE",
-  "COURONNE"
+  "LEADER"
  ]
 }

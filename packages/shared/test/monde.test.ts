@@ -1,323 +1,369 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { ARENES, CONFIG, creerMonde, memoireBot, pas, penser, solideEn, ticks, type Entree, type Monde } from '../src/index';
-import { monde, placer, tourner, vers } from './outils';
+import {
+  ARENES, CONFIG, COULEURS, creerMonde, famille, intention, memoireBot, pas, penser, ticks, validerArene,
+  type Entree, type Monde, type Mot,
+} from '../src/index';
+import { ACTION, CARTE, decreter, monde, placer, tourner, toucher, vers } from './outils';
 
-const S = CONFIG.tickHz;
-const mot = (x: number, y: number, m: any, verrou = false) => ({ x, y, mots: [m], verrou });
-const en = (w: Monde, m: string) => w.blocs.find((b) => b.mot === m)!;
-const evts = (w: Monde, t: string) => w.evts.filter((e) => e.t === t) as any[];
+const proche = (a: number, b: number, tol = 0.05) => assert.ok(Math.abs(a - b) <= tol, `${a} ≉ ${b}`);
+const auSol = (w: Monde, mot: Mot) => w.mots.find((m) => m.mot === mot);
+/** Donne un mot au joueur et l'oriente. */
+function armer(w: Monde, id: number, mot: Mot, x: number, y: number, fx: number, fy: number): void {
+  Object.assign(w.joueurs[id], { porte: mot, x, y, fx, fy });
+}
 
-// --- blocs ----------------------------------------------------------------
+// --- ramasser ------------------------------------------------------------------
 
-test('marcher dans un bloc le pousse d’une case à la fois', () => {
-  const w = monde([mot(5, 3, 'LAVE')]);
-  placer(w, 0, 3.5, 3.5);
-  tourner(w, 12, { 0: vers(1, 0) });
-  assert.equal(en(w, 'LAVE').x, 6);
-  tourner(w, 40, { 0: vers(1, 0) });
-  assert.ok(en(w, 'LAVE').x > 7);
+test('début de manche : la couleur de chaque joueur est à ses pieds, et il y a moins de caisses que de joueurs', () => {
+  const carte = CARTE.map((r, y) => (y === 5 ? '..C..C..C..C..' : r));
+  for (const n of [2, 3, 4]) {
+    const w = monde({ n, carte });
+    assert.deepEqual(w.mots.map((m) => [m.mot, m.x, m.y]), w.joueurs.map((p) => [COULEURS[p.id], p.x, p.y]));
+    assert.equal(w.caisses.length, n - 1);
+  }
 });
 
-test('poussée en chaîne : 3 blocs oui, 4 non', () => {
-  const trois = monde([mot(5, 3, 'LAVE'), mot(6, 3, 'MUR'), mot(7, 3, 'CAISSE')]);
-  placer(trois, 0, 3.5, 3.5);
-  tourner(trois, 12, { 0: vers(1, 0) });
-  assert.deepEqual([en(trois, 'LAVE').x, en(trois, 'MUR').x, en(trois, 'CAISSE').x], [6, 7, 8]);
-
-  const quatre = monde([mot(5, 3, 'LAVE'), mot(6, 3, 'MUR'), mot(7, 3, 'CAISSE'), mot(8, 3, 'TOUS')]);
-  placer(quatre, 0, 3.5, 3.5);
-  tourner(quatre, 40, { 0: vers(1, 0) });
-  assert.equal(en(quatre, 'LAVE').x, 5);
+test('mains vides, l’action ramasse le mot le plus proche à portée', () => {
+  const w = monde({ mots: [{ x: 6, y: 5, mot: 'MORT' }, { x: 7, y: 5, mot: 'GEANT' }] });
+  placer(w, 0, 5.4, 5.5);
+  assert.deepEqual(intention(w, w.joueurs[0]), { t: 'ramasser', id: auSol(w, 'MORT')!.id });
+  tourner(w, 1, { 0: ACTION });
+  assert.equal(w.joueurs[0].porte, 'MORT');
+  assert.equal(auSol(w, 'MORT'), undefined);
+  assert.ok(w.evts.some((e) => e.t === 'prise' && e.j === 0));
+  placer(w, 1, 2, 2);
+  assert.equal(intention(w, w.joueurs[1]), null, 'rien à portée : le bouton ne fait rien');
 });
 
-test('un bloc verrouillé ne bouge pas et bloque la chaîne', () => {
-  const w = monde([mot(5, 3, 'LAVE'), mot(6, 3, 'MUR', true)]);
-  placer(w, 0, 3.5, 3.5);
-  tourner(w, 40, { 0: vers(1, 0) });
-  assert.deepEqual([en(w, 'LAVE').x, en(w, 'MUR').x], [5, 6]);
+test('mémoire d’entrée : un appui un peu trop tôt ramasse quand même', () => {
+  const w = monde({ mots: [{ x: 6, y: 5, mot: 'MORT' }] });
+  placer(w, 0, 4.9, 5.5); // 1,6 case : hors de portée
+  tourner(w, 1, { 0: vers(1, 0, { action: true }) });
+  assert.equal(w.joueurs[0].porte, null);
+  tourner(w, 4, { 0: vers(1, 0) });
+  assert.equal(w.joueurs[0].porte, 'MORT');
 });
 
-test('on ne pousse pas un bloc hors de l’arène ni dans un mur solide', () => {
-  const carte = ['............', '............', '............', '.......M....', '............', '............', '............'];
-  const w = monde([mot(6, 3, 'LAVE'), { x: 0, y: 0, mots: ['MUR', 'EST', 'SOLIDE'] }, mot(11, 5, 'TOUS')], carte);
-  placer(w, 0, 4.5, 3.5);
-  placer(w, 1, 9.5, 5.5);
-  tourner(w, 40, { 0: vers(1, 0), 1: vers(1, 0) });
-  assert.equal(en(w, 'LAVE').x, 6);
-  assert.equal(en(w, 'TOUS').x, 11);
+test('on ne porte qu’un mot, à 90 % de sa vitesse', () => {
+  const w = monde({ mots: [{ x: 6, y: 5, mot: 'MORT' }] });
+  armer(w, 0, 'GEANT', 5.6, 5.5, 1, 0);
+  tourner(w, 12, { 0: vers(0, 1) });
+  proche(w.joueurs[0].vy, CONFIG.joueur.vitesse * CONFIG.joueur.facteurPorte);
+  assert.ok(auSol(w, 'MORT'), 'le mot au sol n’a pas bougé');
 });
 
-test('longer une rangée de blocs ne la pousse pas', () => {
-  const w = monde([mot(3, 4, 'LAVE'), mot(4, 4, 'MUR'), mot(5, 4, 'TOUS')]);
-  placer(w, 0, 3.5, 3.5);
-  tourner(w, 20, { 0: vers(1, 0.6) });
-  assert.deepEqual(w.blocs.map((b) => b.y), [4, 4, 4]);
-  placer(w, 0, 4.5, 3.5);
-  tourner(w, 20, { 0: vers(0.6, 1) });
-  assert.equal(en(w, 'MUR').y, 5, 'mais appuyer franchement dessus, si');
+// --- poser ---------------------------------------------------------------------
+
+test('mot en main, face à un emplacement compatible à portée : l’action le pose, l’ancien retombe deux cases plus loin', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 4, 5, 0, -1); // sous la propriété du châssis 1, à 2,5 cases : trop loin
+  assert.equal(intention(w, w.joueurs[0])!.t, 'lancer');
+  placer(w, 0, 4, 4);
+  assert.deepEqual(intention(w, w.joueurs[0]), { t: 'poser', ch: 1, cote: 1 });
+  tourner(w, 1, { 0: ACTION });
+  const l = w.lois[1];
+  assert.deepEqual([l.sujet, l.prop, l.auteur, l.arme, l.sceaux], ['MUR', 'MORT', 0, ticks(CONFIG.loi.armement) - 1, [0, ticks(CONFIG.loi.sceau) - 1]]);
+  assert.equal(w.joueurs[0].porte, null);
+  assert.equal(w.joueurs[0].stats.ecrites, 1);
+  const ancien = auSol(w, 'LENT')!;
+  // droit devant, il retomberait sur la Loi d'or : il part sur le côté, à deux cases
+  proche(Math.hypot(ancien.x - 4, ancien.y - 2.5), CONFIG.geste.ejection, 1e-6);
+  assert.equal(Math.floor(ancien.y), 2);
 });
 
-test('agripper permet de décoller un bloc du bord', () => {
-  const w = monde([mot(0, 3, 'LAVE')]);
-  placer(w, 0, 1.4, 3.5);
-  tourner(w, 2, { 0: vers(-1, 0, { agrippe: true }) });
-  assert.equal(w.joueurs[0].tient, en(w, 'LAVE').id);
-  tourner(w, 40, { 0: vers(1, 0, { agrippe: true }) });
-  assert.ok(en(w, 'LAVE').x >= 2);
-  tourner(w, 2, { 0: vers(1, 0) });
-  assert.equal(w.joueurs[0].tient, -1, 'relâcher la touche lâche le bloc');
+test('pas de pose dos à l’emplacement, ni d’un mot identique, ni sur un sceau : le bouton lance', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 4, 4, 0, 1);
+  assert.equal(intention(w, w.joueurs[0])!.t, 'lancer', 'dos tourné');
+  armer(w, 0, 'LENT', 4, 4, 0, -1);
+  assert.equal(intention(w, w.joueurs[0])!.t, 'lancer', 'LENT est déjà en place');
+  armer(w, 0, 'MORT', 4, 4, 0, -1);
+  w.lois[1].sceaux = [0, 30];
+  assert.equal(intention(w, w.joueurs[0])!.t, 'lancer', 'emplacement scellé');
+  placer(w, 0, 4, 2.9);
+  w.lois[1].sceaux = [0, 0];
+  w.joueurs[0].fy = 1;
+  assert.equal(intention(w, w.joueurs[0])!.t, 'poser', 'collé à l’emplacement, l’orientation ne compte plus');
 });
 
-test('on n’agrippe pas un bloc verrouillé', () => {
-  const w = monde([mot(0, 3, 'LAVE', true)]);
-  placer(w, 0, 1.4, 3.5);
-  tourner(w, 3, { 0: vers(-1, 0, { agrippe: true }) });
-  assert.equal(w.joueurs[0].tient, -1);
+test('une couleur se pose en sujet : qui tient ta couleur écrit une loi sur toi', () => {
+  const w = monde();
+  armer(w, 1, 'ROUGE', 1, 3.6, 0, -1);
+  tourner(w, 1, { 1: ACTION });
+  assert.deepEqual([w.lois[1].sujet, w.lois[1].auteur], ['ROUGE', 1]);
+  tourner(w, ticks(CONFIG.loi.armement));
+  assert.ok(w.joueurs[0].props.includes('LENT'));
 });
 
-// --- dash -----------------------------------------------------------------
+// --- lancer --------------------------------------------------------------------
 
-test('le dash étourdit 0,5 s et fait lâcher prise', () => {
-  const w = monde([mot(5, 3, 'LAVE')]);
-  placer(w, 1, 4.6, 3.5);
-  placer(w, 0, 3.4, 3.5);
-  w.joueurs[1].fx = 1; w.joueurs[1].fy = 0;
-  tourner(w, 1, { 1: vers(0, 0, { agrippe: true }) });
-  assert.equal(w.joueurs[1].tient, en(w, 'LAVE').id);
-  w.joueurs[0].fx = 1; w.joueurs[0].fy = 0;
-  pas(w, { 0: vers(1, 0, { dash: true }), 1: vers(0, 0, { agrippe: true }) });
-  tourner(w, 2, { 1: vers(0, 0, { agrippe: true }) });
-  assert.equal(w.joueurs[1].tient, -1);
-  assert.ok(w.joueurs[1].etourdi > 0);
-  assert.equal(evts(w, 'choc').length, 1);
-  tourner(w, ticks(CONFIG.dash.etourdi));
-  assert.equal(w.joueurs[1].etourdi, 0);
+test('lancé, un mot glisse 5 cases droit devant puis s’arrête', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 3, 6.2, 1, 0);
+  tourner(w, 1, { 0: ACTION });
+  assert.equal(w.joueurs[0].porte, null);
+  assert.ok(auSol(w, 'MORT')!.reste > 0, 'en vol');
+  tourner(w, 20);
+  const m = auSol(w, 'MORT')!;
+  proche(m.x, 3 + CONFIG.geste.lancer, 1e-6);
+  assert.deepEqual([m.y, m.reste], [6.2, 0]);
+});
+
+test('un mot lancé s’arrête contre un obstacle ou un joueur', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 3.5, 4.5, 1, 0); // vers le mur (5,4)
+  tourner(w, 1, { 0: ACTION });
+  tourner(w, 20);
+  assert.ok(auSol(w, 'MORT')!.x < 5 && auSol(w, 'MORT')!.x > 4);
+  armer(w, 0, 'GEANT', 3, 6.2, 1, 0);
+  placer(w, 1, 5.5, 6.2);
+  tourner(w, 1, { 0: ACTION });
+  tourner(w, 20);
+  proche(auSol(w, 'GEANT')!.x, 5.5, 0.6);
+});
+
+test('la visée s’aimante : un mot lancé vers un emplacement compatible s’y pose, au nom du lanceur', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 11.3, 6.6, 0, -1); // à 4 cases sous la propriété du châssis 2, un peu de travers
+  const it = intention(w, w.joueurs[0]);
+  assert.ok(it?.t === 'lancer' && it.ch === 2 && it.cote === 1);
+  tourner(w, 1, { 0: ACTION });
+  tourner(w, 12);
+  assert.deepEqual([w.lois[2].prop, w.lois[2].auteur], ['MORT', 0]);
+  assert.equal(w.joueurs[0].stats.lances, 1);
+  assert.ok(auSol(w, 'RAPIDE'), 'le mot remplacé est éjecté');
+});
+
+test('un autre joueur attrape un mot au vol', () => {
+  const w = monde();
+  armer(w, 0, 'MORT', 3, 6.2, 1, 0);
+  placer(w, 1, 6, 5.4);
+  tourner(w, 1, { 0: ACTION });
+  tourner(w, 5);
+  tourner(w, 1, { 1: ACTION });
+  assert.equal(w.joueurs[1].porte, 'MORT');
+  assert.equal(w.joueurs[1].stats.attrapes, 1);
+});
+
+// --- dash, couronne, caisses ---------------------------------------------------
+
+test('le dash étourdit 0,5 s, repousse d’une case, fait lâcher le mot et la couronne', () => {
+  const w = monde({ n: 2 });
+  toucher(w, 1, 'COURONNE');
+  armer(w, 1, 'MORT', 6, 6.5, 0, 1);
+  tourner(w, 1);
+  assert.equal(w.couronne!.porteur, 1);
+  placer(w, 0, 5, 6.5);
+  tourner(w, 1, { 0: vers(1, 0, { dash: true }) });
+  tourner(w, 3, { 0: vers(1, 0) });
+  const q = w.joueurs[1];
+  assert.ok(q.etourdi > 0 && q.etourdi <= ticks(CONFIG.dash.etourdi));
+  assert.equal(q.porte, null);
+  assert.ok(auSol(w, 'MORT'));
+  tourner(w, ticks(CONFIG.dash.etourdi), { 0: vers(1, 0) });
+  proche(q.x, 7, 0.25);
+  assert.equal(w.couronne!.porteur, 0, 'l’attaquant marche dessus et la prend');
+  assert.equal(w.joueurs[0].stats.dashs, 1);
 });
 
 test('le dash a un temps de recharge', () => {
   const w = monde();
-  placer(w, 0, 2.5, 3.5);
-  tourner(w, 20, { 0: vers(1, 0, { dash: true }) });
-  assert.equal(evts(w, 'dash').length, 1);
-  tourner(w, ticks(CONFIG.dash.recharge), { 0: vers(-1, 0, { dash: true }) });
-  assert.equal(evts(w, 'dash').length, 2);
+  placer(w, 0, 2, 6);
+  tourner(w, 1, { 0: vers(1, 0, { dash: true }) });
+  tourner(w, ticks(CONFIG.dash.duree) + 6);
+  const x = w.joueurs[0].x;
+  tourner(w, 1, { 0: vers(1, 0, { dash: true }) });
+  assert.ok(w.joueurs[0].x - x < 0.3, 'pas de second dash immédiat');
 });
 
-// --- règles visant un joueur ----------------------------------------------
-
-const ROUGE_MORT = { x: 4, y: 2, mots: ['ROUGE', 'EST', 'MORT'] as any };
-
-test('une règle visant un joueur met 1 s à s’armer, avec avertissement', () => {
-  const w = monde([ROUGE_MORT]);
-  tourner(w, 1);
-  assert.deepEqual(evts(w, 'arme'), [{ t: 'arme', j: 0, prop: 'MORT' }]);
-  tourner(w, S - 2);
-  assert.equal(w.joueurs[0].mort, false);
-  tourner(w, 3);
-  assert.equal(w.joueurs[0].mort, true);
+test('la couronne se porte sur la tête : on la ramasse en marchant dessus, mains libres', () => {
+  const w = monde({ mots: [{ x: 11, y: 5, mot: 'MORT' }] });
+  toucher(w, 2, 'COURONNE');
+  assert.equal(w.couronne!.porteur, 2);
+  assert.ok(w.evts.some((e) => e.t === 'couronne' && e.j === 2));
+  tourner(w, 1, { 2: ACTION });
+  assert.equal(w.joueurs[2].porte, 'MORT', 'elle n’occupe pas les mains');
+  tourner(w, 10, { 2: vers(1, 0) });
+  proche(w.couronne!.x, w.joueurs[2].x, 1e-9);
 });
 
-test('un mort reste fantôme tant que la règle le vise', () => {
-  const w = monde([ROUGE_MORT]);
-  tourner(w, S * 8);
-  assert.equal(w.joueurs[0].mort, true);
-  assert.equal(w.joueurs[0].stats.morts, 1);
-});
-
-test('le fantôme casse la règle qui le tue, revient après 3 s, invulnérable 1 s', () => {
-  const w = monde([ROUGE_MORT, { x: 0, y: 6, mots: ['LAVE', 'EST', 'MORT'] }], ['............', '............', '............', '............', '............', '............', '.....L......']);
-  placer(w, 0, 6.5, 4.5);
-  tourner(w, S + 2);
-  assert.equal(w.joueurs[0].mort, true);
-  tourner(w, 20, { 0: vers(0, -1) }); // pousse MORT hors de la phrase
-  assert.equal(w.regles.some((r) => r.id === 'ROUGE EST MORT'), false);
-  assert.equal(w.joueurs[0].stats.cassees, 1);
-  tourner(w, 20);
-  assert.equal(w.joueurs[0].mort, true, 'pas avant 3 s');
-  tourner(w, ticks(CONFIG.joueur.respawn));
-  const p = w.joueurs[0];
-  assert.equal(p.mort, false);
-  assert.notDeepEqual([p.x, p.y], [5.5, 6.5], 'son point d’apparition est dans la lave mortelle : il prend le suivant');
-  assert.equal(evts(w, 'respawn').length, 1);
-});
-
-test('l’invulnérabilité protège de la mort pendant 1 s', () => {
-  const carte = Array.from({ length: 7 }, (_, y) => (y === 4 ? 'L'.repeat(12) : '.'.repeat(12)));
-  const w = monde([{ x: 0, y: 0, mots: ['LAVE', 'EST', 'MORT'] }], carte, 1);
-  placer(w, 0, 6.5, 4.5);
-  w.joueurs[0].invul = ticks(CONFIG.joueur.invulnerable);
-  tourner(w, ticks(CONFIG.joueur.invulnerable) - 1);
-  assert.equal(w.joueurs[0].mort, false);
-  tourner(w, 3);
-  assert.equal(w.joueurs[0].mort, true);
-});
-
-test('un fantôme ne marque pas', () => {
-  const w = monde([ROUGE_MORT, { x: 0, y: 0, mots: ['TOUS', 'EST', 'GEANT'] }]);
-  tourner(w, S * 3);
-  assert.equal(w.joueurs[0].mort, true);
-  assert.equal(w.joueurs[0].score, 0);
-});
-
-test('contraires : ROUGE EST MORT + ROUGE EST POINTS ne font rien', () => {
-  const w = monde([ROUGE_MORT, { x: 4, y: 4, mots: ['ROUGE', 'EST', 'POINTS'] }]);
-  tourner(w, S * 3);
-  assert.equal(w.joueurs[0].mort, false);
-  assert.equal(w.joueurs[0].score, 0);
-});
-
-test('LEADER change de tête : la règle se réarme sur le nouveau leader', () => {
-  const w = monde([{ x: 4, y: 2, mots: ['LEADER', 'EST', 'LENT'] }]);
-  tourner(w, S + 2);
-  assert.deepEqual(w.joueurs.map((p) => Object.keys(p.tags).length), [0, 0, 0, 0], 'personne à 0 partout');
-  w.joueurs[0].score = 5;
-  tourner(w, S + 2);
-  assert.equal(w.joueurs[0].tags.LENT, 0);
-  w.joueurs[1].score = 9;
-  tourner(w, 2);
-  assert.equal(w.joueurs[0].tags.LENT, undefined);
-  assert.ok(w.joueurs[1].tags.LENT! > 0, 'en cours d’armement');
-});
-
-// --- auteur ---------------------------------------------------------------
-
-test('qui complète la phrase en est l’auteur et touche les victimes', () => {
-  const w = monde([{ x: 4, y: 2, mots: ['ROUGE', 'EST'] }, mot(6, 4, 'MORT')]);
-  placer(w, 1, 6.5, 6.5);
-  for (let i = 0; i < 80 && !w.regles.length; i++) pas(w, { 1: vers(0, -1) });
-  assert.deepEqual(w.regles.map((r) => [r.id, r.auteur]), [['ROUGE EST MORT', 1]]);
-  assert.equal(w.joueurs[1].stats.creees, 1);
-  tourner(w, S + 2);
-  assert.equal(w.joueurs[0].mort, true);
-  assert.equal(w.joueurs[1].score, CONFIG.points.victime);
-  assert.equal(w.joueurs[1].stats.victimes, 1);
-  assert.equal(w.regles[0].victimes, 1);
-  assert.deepEqual(evts(w, 'mort'), [{ t: 'mort', j: 0, par: 1, regle: 'ROUGE EST MORT' }]);
-});
-
-test('on ne gagne rien à se tuer soi-même', () => {
-  const w = monde([{ x: 4, y: 2, mots: ['ROUGE', 'EST'] }, mot(6, 4, 'MORT')]);
-  placer(w, 0, 6.5, 6.5);
-  for (let i = 0; i < 80 && !w.regles.length; i++) pas(w, { 0: vers(0, -1) });
-  tourner(w, S + 2);
-  assert.equal(w.joueurs[0].mort, true);
-  assert.equal(w.joueurs[0].score, 0);
-});
-
-// --- chutes ---------------------------------------------------------------
-
-test('un mot tombe toutes les 20 s, annoncé 2 s avant par une ombre', () => {
+test('une caisse se pousse en marchant, d’une case, pas dans un mur ni hors de l’arène', () => {
   const w = monde();
+  placer(w, 0, 9.5, 4.5); // à droite de la caisse (8,4), le mur est en (5,4)
+  tourner(w, 60, { 0: vers(-1, 0) });
+  assert.deepEqual([w.caisses[0].x, w.caisses[0].y], [6, 4], 'arrêtée contre le mur');
+  assert.ok(w.joueurs[0].x > 7, 'et le joueur derrière elle');
+});
+
+// --- mots du ciel --------------------------------------------------------------
+
+test('toutes les 15 s, le mot suivant de la pioche tombe au sol, annoncé 2 s avant par une ombre', () => {
+  const w = monde({ pioche: ['LENT', 'MORT', 'TOUS'] });
   w.chuteDans = ticks(CONFIG.chute.periode);
-  tourner(w, ticks(CONFIG.chute.periode) - 1);
-  assert.equal(w.ombres.length, 0);
-  tourner(w, 1);
-  assert.equal(w.ombres.length, 1);
+  tourner(w, ticks(CONFIG.chute.periode));
+  assert.deepEqual(w.ombres.map((o) => [o.mot, o.ch]), [['MORT', -1]], 'LENT est déjà en jeu : chaque mot n’existe qu’en un exemplaire');
   tourner(w, ticks(CONFIG.chute.ombre) - 1);
-  assert.equal(w.blocs.length, 0);
+  assert.equal(auSol(w, 'MORT'), undefined);
   tourner(w, 1);
-  assert.deepEqual(w.blocs.map((b) => b.mot), ['EST']);
-  assert.equal(w.ombres.length, 0);
+  assert.ok(auSol(w, 'MORT'));
+  tourner(w, ticks(CONFIG.chute.periode));
+  assert.ok(auSol(w, 'TOUS'));
 });
 
-test('10 s sans règle POINTS : un bloc POINTS tombe', () => {
+test('une loi inchangée depuis 20 s reçoit le mot du ciel dans son emplacement', () => {
+  const w = monde({ pioche: ['TOUS', 'MORT'] });
+  w.lois[2].age = 0;
+  tourner(w, ticks(CONFIG.chute.inertie) + 1);
+  assert.deepEqual(w.ombres.map((o) => [o.mot, o.ch, o.cote]), [['TOUS', 2, 0]]);
+  tourner(w, ticks(CONFIG.chute.ombre));
+  assert.deepEqual([w.lois[2].sujet, w.lois[2].prop, w.lois[2].auteur], ['TOUS', 'RAPIDE', -1]);
+  assert.ok(auSol(w, 'CAISSE'), 'le mot remplacé retombe au sol');
+});
+
+test('la Loi d’or trop vieille reçoit un nom de chose repris au sol', () => {
+  const w = monde({ mots: [{ x: 6, y: 6, mot: 'LAVE' }], pioche: ['TOUS'] });
+  w.lois[0].age = ticks(CONFIG.chute.inertie);
+  w.derniereChute = -1e6;
+  tourner(w, ticks(CONFIG.chute.ombre) + 1);
+  assert.equal(w.lois[0].sujet, 'LAVE');
+  assert.equal(w.mots.filter((m) => m.mot === 'LAVE').length, 0, 'le mot a quitté le sol');
+  assert.ok(auSol(w, 'COURONNE'));
+});
+
+test('au plus 8 mots libres : le groupe ou la propriété le plus ancien disparaît, jamais une couleur ni une chose', () => {
+  const noms: Mot[] = ['LAVE', 'MUR', 'CAISSE', 'COURONNE', 'TOUS', 'LEADER', 'MORT', 'GEANT'];
+  const w = monde({ mots: noms.map((mot, i) => ({ x: 1 + i, y: 6, mot })), pioche: ['DERNIER'] });
+  auSol(w, 'TOUS')!.ne = 5; // déplacé depuis : LEADER est désormais le plus ancien
+  w.chuteDans = 1;
+  tourner(w, ticks(CONFIG.chute.ombre) + 1);
+  assert.ok(auSol(w, 'DERNIER'));
+  assert.equal(auSol(w, 'LEADER'), undefined);
+  assert.equal(w.mots.filter((m) => famille(m.mot) !== 'couleur').length, CONFIG.chute.max);
+  assert.equal(w.mots.filter((m) => famille(m.mot) === 'couleur').length, 4);
+});
+
+// --- manche --------------------------------------------------------------------
+
+function mondeNeuf(): Monde {
   const w = monde();
-  w.disette = 0;
-  tourner(w, ticks(CONFIG.chute.disette) + ticks(CONFIG.chute.ombre));
-  assert.deepEqual(w.blocs.map((b) => b.mot), ['POINTS']);
-});
-
-test('pas de disette tant qu’une règle POINTS existe', () => {
-  const w = monde([{ x: 0, y: 0, mots: ['LAVE', 'EST', 'POINTS'] }]);
-  w.disette = 0;
-  tourner(w, ticks(CONFIG.chute.disette) * 2);
-  assert.equal(w.blocs.length, 3);
-});
-
-// --- manche ---------------------------------------------------------------
+  w.phase = 'decompte'; w.temps = ticks(CONFIG.manche.decompte);
+  return w;
+}
 
 test('décompte puis 90 s, le plus de points gagne', () => {
-  const w = creerMonde(ARENES[0], [0, 1], 7);
-  assert.equal(w.phase, 'decompte');
-  const x = w.joueurs[0].x;
+  const w = mondeNeuf();
   tourner(w, ticks(CONFIG.manche.decompte) - 1, { 0: vers(1, 0) });
-  assert.equal(w.joueurs[0].x, x, 'immobile pendant le décompte');
+  assert.equal(w.phase, 'decompte');
+  assert.equal(w.joueurs[0].x, 1.5, 'immobile pendant le décompte');
   tourner(w, 1);
   assert.equal(w.phase, 'jeu');
-  assert.equal(w.temps, ticks(CONFIG.manche.duree));
-  w.joueurs[1].score = 4;
-  w.temps = 3;
-  tourner(w, 3);
-  assert.equal(w.phase, 'fin');
-  assert.equal(w.vainqueur, 1);
-});
-
-test('égalité : mort subite, le premier seul en tête gagne', () => {
-  const w = monde();
-  w.temps = 2;
-  tourner(w, 2);
-  assert.equal(w.phase, 'mortsubite');
-  tourner(w, 10);
-  assert.equal(w.phase, 'mortsubite');
-  w.joueurs[2].score = 1;
-  tourner(w, 1);
+  w.joueurs[2].score = 7;
+  tourner(w, ticks(CONFIG.manche.duree));
   assert.equal(w.phase, 'fin');
   assert.equal(w.vainqueur, 2);
 });
 
-test('mort subite plafonnée : tirage au sort entre ex æquo', () => {
-  const w = monde();
-  w.joueurs[0].score = w.joueurs[3].score = 2;
-  w.temps = 1;
-  tourner(w, 1 + ticks(CONFIG.manche.mortSubiteMax));
-  assert.equal(w.phase, 'fin');
-  assert.ok([0, 3].includes(w.vainqueur));
+test('égalité : mort subite, le premier seul en tête gagne ; plafonnée, elle tire au sort', () => {
+  const w = mondeNeuf();
+  tourner(w, ticks(CONFIG.manche.decompte) + ticks(CONFIG.manche.duree));
+  assert.equal(w.phase, 'mortsubite');
+  w.joueurs[1].score = 1;
+  tourner(w, 1);
+  assert.deepEqual([w.phase, w.vainqueur], ['fin', 1]);
+  const v = mondeNeuf();
+  v.joueurs[0].score = v.joueurs[3].score = 4;
+  tourner(v, ticks(CONFIG.manche.decompte) + ticks(CONFIG.manche.duree) + ticks(CONFIG.manche.mortSubiteMax));
+  assert.equal(v.phase, 'fin');
+  assert.ok([0, 3].includes(v.vainqueur));
 });
 
-// --- arènes, déterminisme, robustesse -------------------------------------
+// --- arènes et bots ------------------------------------------------------------
 
-for (const arene of ARENES)
-  test(`arène ${arene.id} : valide, jouable, et 4 bots finissent la manche sans incohérence`, () => {
-    const w = creerMonde(arene, [0, 1, 2, 3], 42);
-    assert.ok(w.regles.some((r) => r.prop === 'POINTS'), 'il y a de quoi marquer dès le départ');
-    for (const [x, y] of arene.spawns) assert.equal(solideEn(w, x, y), false);
-    const mems = [0, 1, 2, 3].map(memoireBot);
-    const max = ticks(CONFIG.manche.decompte + CONFIG.manche.duree + CONFIG.manche.mortSubiteMax) + 5;
-    for (let i = 0; i < max && w.phase !== 'fin'; i++) {
-      pas(w, Object.fromEntries(mems.map((m, id) => [id, penser(w, id, m)])));
-      const cases = new Set(w.blocs.map((b) => `${b.x},${b.y}`));
-      assert.equal(cases.size, w.blocs.length, 'deux blocs sur la même case');
-      for (const p of w.joueurs) assert.ok(p.x > 0 && p.x < 18 && p.y > 0 && p.y < 11 && Number.isFinite(p.score), 'joueur hors arène');
-      w.evts.length = 0;
+test('au moins trois arènes valides : Loi d’or, 2 ou 3 lois libres, 5 à 7 mots au sol, pioche de groupes et propriétés', () => {
+  assert.ok(ARENES.length >= 3);
+  for (const ar of ARENES) {
+    validerArene(ar);
+    assert.ok(ar.chassis.length === 3 || ar.chassis.length === 4, ar.id);
+    assert.ok(ar.mots.length >= 5 && ar.mots.length <= 7, `${ar.id} : ${ar.mots.length} mots au sol`);
+    const w = creerMonde(ar, [0, 1, 2, 3], 1);
+    assert.ok(w.caisses.length < 4, 'moins de caisses que de joueurs');
+  }
+  const premiere = [...ARENES[0].chassis.map((c) => c.prop), ...ARENES[0].mots.map((m) => m.mot), ...ARENES[0].pioche].filter((m) => famille(m) === 'prop');
+  assert.deepEqual([...new Set(premiere)].sort(), ['GEANT', 'LENT', 'MORT', 'POINTS', 'RAPIDE'], 'la première arène se limite aux mots simples');
+});
+
+test('une arène mal formée est refusée', () => {
+  const base = ARENES[0];
+  const refusee = (plus: Partial<typeof base>) => assert.throws(() => validerArene({ ...base, ...plus }));
+  refusee({ chassis: [{ ...base.chassis[0], sujet: 'TOUS' }, ...base.chassis.slice(1)] });
+  refusee({ chassis: base.chassis.slice(0, 2) });
+  refusee({ mots: [...base.mots, { x: 0, y: 0, mot: 'POINTS' }] });
+  refusee({ mots: [...base.mots, { x: 0, y: 0, mot: 'ROUGE' }] });
+  refusee({ mots: [...base.mots, { x: 0, y: 0, mot: 'LENT' }] });
+  refusee({ mots: [...base.mots, { x: 0, y: 0, mot: 'CAISSE' }] });
+  refusee({ pioche: ['LAVE'] });
+});
+
+function jouer(w: Monde, n: number, graine = 1): void {
+  let g = graine;
+  const hasard = Math.random;
+  Math.random = () => { g = (g * 1103515245 + 12345) & 0x7fffffff; return g / 0x80000000; };
+  try {
+    const mems = w.joueurs.map(() => memoireBot());
+    for (let i = 0; i < n; i++) {
+      const entrees: Record<number, Entree> = {};
+      w.joueurs.forEach((p, k) => { entrees[p.id] = penser(w, p.id, mems[k]); });
+      pas(w, entrees);
     }
-    assert.equal(w.phase, 'fin');
-    assert.ok(w.vainqueur >= 0);
-  });
+  } finally { Math.random = hasard; }
+}
 
 test('déterministe : même graine, mêmes entrées, même monde', () => {
-  const jouer = () => {
-    const w = creerMonde(ARENES[0], [0, 1, 2, 3], 99);
-    let g = 12345;
-    const h = () => ((g = (g * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
-    for (let i = 0; i < 1500; i++) {
-      const e: Record<number, Entree> = {};
-      for (let id = 0; id < 4; id++) e[id] = { seq: i, mx: Math.round(h() * 2 - 1), my: Math.round(h() * 2 - 1), dash: h() < 0.05, agrippe: h() < 0.3 };
-      pas(w, e);
-    }
-    return JSON.stringify(w);
-  };
-  assert.equal(jouer(), jouer());
+  const a = creerMonde(ARENES[0], [0, 1, 2, 3], 42), b = creerMonde(ARENES[0], [0, 1, 2, 3], 42);
+  jouer(a, 1500); jouer(b, 1500);
+  a.evts = b.evts = [];
+  assert.deepEqual(a, b);
 });
+
+for (const ar of ARENES)
+  test(`${ar.id} : quatre bots jouent une manche entière, marquent et réécrivent des lois`, () => {
+    const w = creerMonde(ar, [0, 1, 2, 3], 7);
+    let ecrites = 0;
+    for (let i = 0; i < 40 && w.phase !== 'fin'; i++) {
+      jouer(w, 100, i + 1);
+      ecrites += w.evts.filter((e) => e.t === 'loi' && e.par >= 0).length;
+      w.evts = [];
+      // les mots ne se perdent ni ne se dupliquent : un exemplaire, deux pour les choses
+      const tous = [...w.lois.flatMap((l) => [l.sujet, l.prop]), ...w.mots.map((m) => m.mot), ...w.joueurs.flatMap((p) => p.porte ?? [])].filter((m) => m !== 'POINTS');
+      for (const m of new Set(tous)) assert.ok(tous.filter((k) => k === m).length <= (famille(m) === 'chose' ? 2 : 1), `${m} en trop`);
+      assert.equal(tous.filter((m) => famille(m) === 'couleur').length, 4, 'aucune couleur perdue');
+    }
+    assert.equal(w.phase, 'fin');
+    assert.ok(Math.max(...w.joueurs.map((p) => p.score)) > 0, 'quelqu’un marque');
+    assert.ok(ecrites > 0, 'des lois sont réécrites');
+  });
 
 test('le bot replanifie à la manche suivante (sa mémoire survit, pas le compteur de pas)', () => {
   const mem = memoireBot();
-  const premiere = creerMonde(ARENES[0], [0, 1], 3);
-  premiere.phase = 'jeu'; premiere.tick = 2500;
-  penser(premiere, 0, mem);
-  const echeance = mem.jusqua;
-  const suivante = creerMonde(ARENES[1], [0, 1], 3);
-  suivante.phase = 'jeu';
+  mem.jusqua = 5010;
+  const suivante = monde();
   penser(suivante, 0, mem);
-  assert.ok(mem.jusqua < echeance && mem.jusqua <= 120);
+  assert.ok(mem.jusqua < 100, 'l’échéance périmée est abandonnée');
+});
+
+test('le bot sait remplir la condition de la Loi d’or et réécrire la loi qui le tue', () => {
+  const w = monde({ n: 2, mots: [{ x: 3, y: 6, mot: 'GEANT' }] });
+  jouer(w, 200);
+  assert.ok(w.couronne!.porteur >= 0 || w.joueurs.some((p) => p.score > 0), 'quelqu’un est allé chercher la couronne');
+  const v = monde({ n: 2, mots: [{ x: 2, y: 5, mot: 'GLISSANT' }] });
+  decreter(v, 1, 'ROUGE', 'MORT');
+  v.lois[2] = { ...v.lois[2], sceaux: [1e6, 1e6] }; // seule la loi qui le tue est modifiable
+  v.couronne = null;
+  const mem = memoireBot();
+  tourner(v, 2);
+  assert.ok(v.joueurs[0].mort);
+  for (let i = 0; i < 300 && v.lois[1].sujet === 'ROUGE' && v.lois[1].prop === 'MORT'; i++) pas(v, { 0: penser(v, 0, mem) });
+  assert.equal(v.lois[1].auteur, 0, 'le fantôme a réécrit sa condamnation');
+  assert.notEqual(`${v.lois[1].sujet} ${v.lois[1].prop}`, 'ROUGE MORT');
 });

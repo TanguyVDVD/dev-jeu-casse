@@ -1,6 +1,6 @@
 export * from './config';
 export * from './vocab';
-export * from './regles';
+export * from './lois';
 export * from './proprietes';
 export * from './monde';
 export * from './arenes';

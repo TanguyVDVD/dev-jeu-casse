@@ -1,48 +1,48 @@
-import { CONFIG } from './config';
-import { marquer, tuer, type Joueur, type Monde, type RegleActive } from './monde';
-import type { Objet, Prop } from './vocab';
+import { CONFIG, DT } from './config';
+import type { Loi } from './lois';
+import { bouclage, detrousser, marquer, tuer, type Joueur, type Monde } from './monde';
+import type { Prop } from './vocab';
 
 /**
- * Un composant par propriété. La simulation ne connaît aucun mot : elle lit ces
- * champs sur les étiquettes des entités. Ajouter un mot = une entrée ici + son nom dans vocab.ts.
+ * Un composant par propriété. Le moteur ne connaît aucun mot : il lit ces champs
+ * sur les propriétés que les lois donnent à un joueur. Ajouter un mot = une entrée ici + son nom dans vocab.ts.
  */
 export interface Composant {
-  contraire?: Prop;
-  /** multiplicateur de vitesse du joueur étiqueté, ou du joueur au contact de l'objet étiqueté */
+  /** ce qu'un bot en pense : positif, il la veut pour lui ; négatif, pour les autres */
+  attrait: number;
   vitesse?: number;
-  /** multiplicateur de taille du joueur */
   taille?: number;
+  /** vitesse de recharge du dash */
+  recharge?: number;
+  /** multiplicateur de tous les points gagnés */
+  gain?: number;
   glisse?: true;
-  solide?: true;
-  attire?: true;
+  inverse?: true;
   invisible?: true;
-  /** à chaque pas, pour un joueur vivant qui porte l'étiquette armée */
-  surJoueur?(w: Monde, p: Joueur, dt: number, regle?: RegleActive): void;
-  /** à chaque pas, pour un joueur vivant au contact d'un objet étiqueté */
-  auContact?(w: Monde, p: Joueur, objet: Objet, dt: number, regle?: RegleActive): void;
+  /** ni étourdi ni repoussé */
+  inebranlable?: true;
+  /** écarte joueurs et caisses en marchant */
+  bouscule?: true;
+  /** faux : transmis par une chose, l'effet cesse avec le contact */
+  remanent?: false;
+  /** à chaque pas, pour un joueur vivant que la loi touche */
+  surJoueur?(w: Monde, p: Joueur, loi: Loi): void;
 }
 
 export const PROPRIETES: Record<Prop, Composant> = {
-  MORT: {
-    contraire: 'POINTS',
-    surJoueur: (w, p, _dt, regle) => tuer(w, p, regle),
-    auContact: (w, p, _o, _dt, regle) => tuer(w, p, regle),
-  },
-  POINTS: {
-    contraire: 'MORT',
-    surJoueur: (w, p, dt, regle) => marquer(w, p, CONFIG.points.passif * dt, regle),
-    auContact: (w, p, _o, dt, regle) => marquer(w, p, CONFIG.points.contact * dt, regle),
-  },
-  SOLIDE: { solide: true },
-  RAPIDE: { contraire: 'LENT', vitesse: CONFIG.props.rapide },
-  LENT: { contraire: 'RAPIDE', vitesse: CONFIG.props.lent },
-  GEANT: { taille: CONFIG.props.geant },
-  GLISSANT: { glisse: true },
-  AIMANT: { attire: true },
-  INVISIBLE: { invisible: true },
+  POINTS: { attrait: 0, remanent: false, surJoueur: (w, p) => marquer(w, p, (DT / CONFIG.points.periode) * (bouclage(w) ? CONFIG.points.bouclage : 1)) },
+  MORT: { attrait: -10, remanent: false, surJoueur: tuer },
+  LENT: { attrait: -3, vitesse: CONFIG.props.lent },
+  RAPIDE: { attrait: 3, vitesse: CONFIG.props.rapide, recharge: CONFIG.props.rapideRecharge },
+  GEANT: { attrait: 1, taille: CONFIG.props.geant, vitesse: CONFIG.props.geantVitesse, inebranlable: true, bouscule: true },
+  GLISSANT: { attrait: -2, glisse: true },
+  INVERSE: { attrait: -3, inverse: true },
+  INVISIBLE: { attrait: 1.5, invisible: true },
+  DOUBLE: { attrait: 5, gain: CONFIG.props.double },
+  VOLEUR: { attrait: 2.5, surJoueur: detrousser },
 };
 
-export const a = (tags: readonly Prop[], champ: 'glisse' | 'solide' | 'attire' | 'invisible') =>
-  tags.some((t) => PROPRIETES[t][champ]);
-export const produit = (tags: readonly Prop[], champ: 'vitesse' | 'taille') =>
-  tags.reduce((m, t) => m * (PROPRIETES[t][champ] ?? 1), 1);
+type Drapeau = 'glisse' | 'inverse' | 'invisible' | 'inebranlable' | 'bouscule';
+export const a = (props: readonly Prop[], champ: Drapeau) => props.some((t) => PROPRIETES[t][champ]);
+export const produit = (props: readonly Prop[], champ: 'vitesse' | 'taille' | 'recharge' | 'gain') =>
+  props.reduce((m, t) => m * (PROPRIETES[t][champ] ?? 1), 1);

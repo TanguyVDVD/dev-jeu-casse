@@ -1,6 +1,6 @@
 import { randomBytes, randomInt } from 'node:crypto';
 import {
-  ARENES, CONFIG, ENTREE_VIDE, creerMonde, instantane, memoireBot, pas, penser, serialiser, ticks,
+  ARENES, CONFIG, ENTREE_VIDE, creerMonde, instantane, memoireBot, pas, penser, serialiser, statsVides, ticks,
   type Entree, type EtatSalon, type MemoireBot, type MessageClient, type MessageServeur, type Monde, type Stats, type Titre,
 } from '@casse/shared';
 
@@ -14,17 +14,16 @@ interface Membre {
 
 const LETTRES = 'BCDFGHJKLMNPRSTVXZ'; // sans voyelles : pas de gros mots, pas de O/0
 const NOMS_BOTS = ['Plomb', 'Bourdon', 'Lézarde', 'Mastic'];
-const STATS_VIDES = (): Stats => ({ creees: 0, cassees: 0, victimes: 0, morts: 0, dashs: 0, pousses: 0, generes: 0 });
-
 const s = (n: number) => (n > 1 ? 's' : '');
+
 const TITRES: [keyof Stats, string, (n: number) => string][] = [
-  ['creees', 'Le Législateur', (n) => `${n} règle${s(n)} promulguée${s(n)}`],
-  ['cassees', 'Le Vandale', (n) => `${n} règle${s(n)} abrogée${s(n)}`],
+  ['ecrites', 'Le Législateur', (n) => `${n} loi${s(n)} écrite${s(n)}`],
   ['victimes', 'Le Bourreau', (n) => `${n} victime${s(n)}`],
   ['morts', 'Le Paillasson', (n) => `mort ${n} fois`],
   ['dashs', 'Le Bélier', (n) => `${n} coup${s(n)} d’épaule`],
-  ['pousses', 'Le Déménageur', (n) => `${n} bloc${s(n)} déplacé${s(n)}`],
-  ['generes', 'Le Mécène', (n) => `${Math.round(n)} points distribués par ses règles`],
+  ['lances', 'Le Tireur d’élite', (n) => `${n} loi${s(n)} écrite${s(n)} au lancer`],
+  ['attrapes', 'Le Pickpocket', (n) => `${n} mot${s(n)} attrapé${s(n)} au vol`],
+  ['voles', 'Le Percepteur', (n) => `${n} point${s(n)} volé${s(n)}`],
 ];
 
 export function attribuerTitres(stats: Record<number, Stats>): Titre[] {
@@ -112,7 +111,7 @@ export class Salon {
     switch (msg.t) {
       case 'i':
         // file bornée : un client qui inonde ne prend pas d'avance, il perd ses vieilles entrées
-        if (m.file.length < 8) m.file.push({ seq: msg.s, mx: msg.mx, my: msg.my, dash: msg.d, agrippe: msg.g });
+        if (m.file.length < 8) m.file.push({ seq: msg.s, mx: msg.mx, my: msg.my, dash: msg.d, action: msg.a });
         return;
       case 'emote': {
         const t = Date.now();
@@ -167,6 +166,7 @@ export class Salon {
   private nouvelleManche(): void {
     const arene = ARENES[this.numero++ % ARENES.length];
     this.monde = creerMonde(arene, this.membres.map((m) => m.c).sort(), randomInt(2 ** 31));
+    if (this.numero === 1) this.monde.temps = ticks(CONFIG.manche.aide); // le temps de lire l'aide
     this.versionEnvoyee = -1;
     for (const m of this.membres) { m.file = []; m.derniere = ENTREE_VIDE; }
     this.diffuser(this.annonceManche());
@@ -175,7 +175,7 @@ export class Salon {
   private finManche(w: Monde): void {
     this.manches[w.vainqueur]++;
     for (const j of w.joueurs) {
-      const s = (this.stats[j.id] ??= STATS_VIDES());
+      const s = (this.stats[j.id] ??= statsVides());
       for (const k of Object.keys(s) as (keyof Stats)[]) s[k] += j.stats[k];
     }
     this.diffuser({ t: 'finmanche', vainqueur: w.vainqueur, manches: this.manches });
@@ -210,16 +210,20 @@ export class Salon {
     const entrees: Record<number, Entree> = {};
     for (const m of this.membres) {
       if (m.bot) { entrees[m.c] = penser(w, m.c, m.bot); continue; }
-      // sans nouvelle entrée, on prolonge la dernière (sans rejouer le dash) ; déconnecté = immobile
-      m.derniere = m.file.shift() ?? { ...m.derniere, dash: false };
-      if (m.file.length > 4) m.file.splice(0, m.file.length - 2);
+      // sans nouvelle entrée, on prolonge la dernière (sans rejouer dash ni action) ; déconnecté = immobile
+      m.derniere = m.file.shift() ?? { ...m.derniere, dash: false, action: false };
+      if (m.file.length > 4) { // en retard : on saute des entrées, mais jamais un appui
+        const sautees = m.file.splice(0, m.file.length - 2);
+        m.file[0] = { ...m.file[0], dash: m.file[0].dash || sautees.some((e) => e.dash), action: m.file[0].action || sautees.some((e) => e.action) };
+      }
       entrees[m.c] = m.lien ? m.derniere : ENTREE_VIDE;
     }
     pas(w, entrees);
 
-    const blocsChanges = w.versionBlocs !== this.versionEnvoyee || w.tick % CONFIG.tickHz === 0;
-    this.versionEnvoyee = w.versionBlocs;
-    const leger = serialiser(instantane(w, blocsChanges));
+    // mots et caisses : seulement quand ils changent, tant qu'un mot vole, et une fois par seconde
+    const change = w.version !== this.versionEnvoyee || w.mots.some((k) => k.reste > 0) || w.tick % CONFIG.tickHz === 0;
+    this.versionEnvoyee = w.version;
+    const leger = serialiser(instantane(w, change));
     const complet = this.membres.some((m) => m.complet) ? serialiser(instantane(w, true)) : leger;
     for (const m of this.membres) { m.lien?.envoyer(m.complet ? complet : leger); m.complet = false; }
     w.evts = [];
