@@ -34,7 +34,7 @@ Un seul bouton d'action, en plus du dash :
 - **mot en main**, face à un emplacement compatible, non scellé, à moins de 1,9 case, il **pose** le mot ;
 - **sinon**, il **lance** le mot droit devant.
 
-Poser un mot éjecte l'ancien, qui retombe au sol deux cases plus loin. Poser un mot identique à celui en place est refusé.
+Poser un mot éjecte l'ancien, qui retombe au sol deux cases plus loin. Poser un mot identique à celui en place est refusé. Un mot au sol ne reste jamais couché sur un châssis ni à cheval sur un bord : il glisse juste à côté.
 
 Un mot lancé glisse sur 5 cases et s'arrête contre un mur, une caisse, un bord ou un joueur. S'il passe à moins de 0,9 case d'un emplacement compatible et non scellé, il s'y pose, au nom du lanceur. La visée s'aimante : si un emplacement compatible se trouve à peu près devant (±26°), le mot part droit dessus. N'importe qui peut l'attraper au vol.
 
@@ -91,6 +91,7 @@ Tout mot ajouté plus tard doit passer ce test : **son effet se voit sur un joue
 
 - On marque par la Loi d'or, tant qu'on remplit sa condition.
 - L'auteur d'une loi gagne **3 points pour chaque autre joueur qu'elle tue**. Une phrase de départ ou tombée du ciel n'a pas d'auteur.
+- Une loi qui condamne aussi son auteur (TOUS EST MORT, LEADER EST MORT quand il est en tête…) ne lui rapporte rien : pas de prime pour un massacre où l'on s'inclut.
 - Un score ne descend jamais sous zéro.
 - Le plus de points à la fin gagne la manche.
 
@@ -104,7 +105,7 @@ Tout mot ajouté plus tard doit passer ce test : **son effet se voit sur un joue
 ## Mots du ciel
 
 - Chaque arène a une **pioche** de groupes et de propriétés. Toutes les 15 s, le mot suivant qui n'est pas déjà en jeu tombe au sol, annoncé 2 s avant par une ombre.
-- **Inertie** : une loi qui n'a pas changé depuis 20 s reçoit un mot du ciel directement dans son emplacement (la plus ancienne d'abord, au plus une toutes les 4 s). Le ciel reprend au besoin un mot qui traîne au sol ; pour la Loi d'or, c'est le nom de chose resté au sol le plus longtemps.
+- **Inertie** : une loi qui n'a pas changé depuis 20 s reçoit un mot du ciel directement dans son emplacement (la plus ancienne d'abord, au plus une toutes les 4 s). Le ciel reprend au besoin un mot qui traîne au sol, qui disparaît dès l'annonce. Pour la Loi d'or, c'est le nom de chose resté au sol le plus longtemps, à défaut celui qu'un joueur garde en main.
 - Au plus **8 mots libres** hors des châssis, couleurs non comptées. Au-delà, le groupe ou la propriété resté le plus longtemps sans être touché disparaît (il reviendra par la pioche). Les couleurs et les noms de choses ne disparaissent jamais.
 
 ## Match
@@ -119,4 +120,4 @@ Manche de 90 s après 3 s de décompte (9 s avant la première, le temps de lire
 | **La Rotative** | CAISSE EST POINTS · LAVE EST GLISSANT · DERNIER EST RAPIDE | Moins de caisses que de joueurs, qu'on pousse hors de portée des autres. Introduit GLISSANT, INVERSÉ, DOUBLE. |
 | **Le Coffre** | COURONNE EST POINTS · DERNIER EST VOLEUR · COURONNE EST LENT · LAVE EST MORT | Grande arène, trois lois libres. La couronne est dans un coffre à portes étroites ; la troisième loi est sur une île de lave qu'on n'atteint qu'au lancer tant que la lave tue. Introduit INVISIBLE, VOLEUR. |
 
-Toutes les valeurs chiffrées sont dans `packages/shared/src/config.ts`. Les mesures d'équilibrage se relancent avec `npm run mesures`.
+Toutes les valeurs chiffrées sont dans `packages/shared/src/config.ts`. Les mesures d'équilibrage se relancent avec `npm run mesures`. Captures du jeu : [`docs/captures/`](captures/).

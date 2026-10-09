@@ -56,7 +56,7 @@ Node 20 ou plus.
 ```
 npm install
 npm run dev          # construit puis sert http://localhost:8080
-npm test             # 138 tests (moteur de lois, gestes, mots du ciel, bots, salons)
+npm test             # 139 tests (moteur de lois, gestes, mots du ciel, bots, salons)
 npm run typecheck
 npm run simulation   # 4 clients WebSocket jouent un match complet ; --latence 100 pour simuler du délai
 npm run mesures      # 200 manches à 4 bots par arène, comparées aux cibles d'équilibrage
@@ -71,6 +71,6 @@ npm run mesures      # 200 manches à 4 bots par arène, comparées aux cibles d
 - Équilibrage : tout est dans [`packages/shared/src/config.ts`](packages/shared/src/config.ts).
 - Nouvelle arène : un fichier JSON dans `packages/shared/arenes/` (carte, châssis et phrases de départ, mots au sol, pioche) et une ligne dans `arenes.ts`.
 - Nouveau mot : son nom dans `vocab.ts`, un composant dans `proprietes.ts`, et (facultatif) une icône dans `packages/client/src/formes.ts`. Il doit passer ce test : son effet se voit sur un joueur dans la seconde.
-- Choix de conception : [docs/DECISIONS.md](docs/DECISIONS.md). Identité : [docs/IDENTITE.md](docs/IDENTITE.md).
+- Choix de conception : [docs/DECISIONS.md](docs/DECISIONS.md). Identité : [docs/IDENTITE.md](docs/IDENTITE.md). Captures : [docs/captures/](docs/captures/).
 
 Polices Anton et Courier Prime sous licence SIL OFL (textes dans `packages/client/public/polices/`). Aucune autre ressource externe : graphismes dessinés par le code, sons synthétisés.
