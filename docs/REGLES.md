@@ -1,71 +1,122 @@
 # Règles de CASSE
 
-## Lire une phrase
+Personne n'a d'arme. On n'agit sur les autres qu'en changeant les lois, et une loi se change en un seul geste : remplacer un mot.
 
-Une règle = trois blocs alignés et contigus `[SUJET] [EST] [PROPRIÉTÉ]`, lus de gauche à droite ou de haut en bas. Jamais à l'envers, jamais en diagonale. Un même bloc peut servir à deux phrases (croisement). Deux phrases identiques ne comptent qu'une fois. Dès qu'un bloc bouge, la grille est relue.
+## Les châssis
 
-Sans règle, rien ne fait rien : la lave est un décor, on traverse les murs, les caisses et les autres joueurs. Seuls les bords de l'arène et les blocs de mots sont toujours solides.
+Chaque arène contient des **châssis** fixes, composés en très grand sur le marbre. Un châssis porte une phrase : `[SUJET] EST [PROPRIÉTÉ]`. `EST` est gravé ; le sujet et la propriété sont deux emplacements qui reçoivent chacun un mot.
 
-## Les sujets
+- **La Loi d'or** : `[CHOSE] EST POINTS`. `POINTS` est gravé : seul le sujet change, et il n'accepte que des noms de choses. Elle dit à tout moment ce qui rapporte des points.
+- **Deux lois libres** (trois dans une grande arène) : n'importe quel sujet, n'importe quelle propriété.
 
-| Sujet | Désigne |
+Un châssis est toujours plein. On ne retire jamais un mot, on le **remplace** : il y a toujours autant de lois en vigueur que de châssis, et annuler une loi oblige à en écrire une autre.
+
+## Les mots
+
+Un mot est un objet posé au sol, lisible de loin. On le porte au-dessus de sa tête, à la vue de tous. Quatre familles, reconnaissables à leur forme autant qu'à leur encre :
+
+| Famille | Mots | Forme | Exemplaires |
+|---|---|---|---|
+| Couleurs | ROUGE, BLEU, VERT, JAUNE (joueurs présents) | étiquette à pointes, à la couleur et à la forme du joueur | 1 |
+| Groupes | TOUS, LEADER, DERNIER | pastille aux bouts ronds, encre pleine | 1 |
+| Choses | COURONNE, LAVE, CAISSE, MUR (celles que l'arène contient) | plaque rectangulaire, encre pleine | 2 |
+| Propriétés | voir le tableau | fiche papier au coin corné | 1 |
+
+Deux exemplaires par chose : la même chose peut rapporter des points dans la Loi d'or et être piégée par une loi libre.
+
+Au début d'une manche, la couleur de chaque joueur est posée à ses pieds. **Qui tient ta couleur peut écrire une loi sur toi** : la protéger, ou voler celle d'un autre, fait partie du jeu.
+
+## Ramasser, poser, lancer
+
+Un seul bouton d'action, en plus du dash :
+
+- **mains vides**, il ramasse le mot le plus proche (portée 1,3 case), y compris un mot en vol ;
+- **mot en main**, face à un emplacement compatible, non scellé, à moins de 1,9 case, il **pose** le mot ;
+- **sinon**, il **lance** le mot droit devant.
+
+Poser un mot éjecte l'ancien, qui retombe au sol deux cases plus loin. Poser un mot identique à celui en place est refusé.
+
+Un mot lancé glisse sur 5 cases et s'arrête contre un mur, une caisse, un bord ou un joueur. S'il passe à moins de 0,9 case d'un emplacement compatible et non scellé, il s'y pose, au nom du lanceur. La visée s'aimante : si un emplacement compatible se trouve à peu près devant (±26°), le mot part droit dessus. N'importe qui peut l'attraper au vol.
+
+On ne porte qu'un mot à la fois, à 90 % de sa vitesse. Un appui un peu trop tôt reste en mémoire 0,2 s. Avant d'appuyer, le jeu montre ce que le bouton va faire : le mot ou l'emplacement visé s'illumine, et la phrase obtenue s'affiche en aperçu.
+
+- **Dash** : ruée de 0,16 s, recharge 1,6 s. Le joueur touché est étourdi 0,5 s, repoussé d'une case, et lâche son mot et la couronne.
+- **Couronne** : elle se porte sur la tête. On la ramasse en marchant dessus ; elle n'occupe pas les mains. Si son porteur meurt, elle retourne sur son socle.
+- **Caisses** : elles se poussent en marchant, d'une case à la fois. Murs et caisses sont solides par nature.
+
+## Armement et sceau
+
+- Une loi modifiée **s'arme pendant 1 s** (alerte visible et sonore), puis elle agit. L'ancienne loi du châssis cesse dès la pose.
+- Le mot posé est **scellé 5 s** : la seconde d'armement, puis 4 s d'effet. Personne ne peut le remplacer pendant ce temps : une loi a toujours le temps d'agir.
+- Seul le mot posé est scellé. L'autre mot du châssis reste remplaçable : on retourne une loi contre son auteur en changeant son sujet.
+- Le châssis prend la couleur de l'**auteur** du dernier mot posé. Les morts que la loi provoque lui sont attribuées.
+
+## Qui subit une loi
+
+Toute propriété finit sur des joueurs : une phrase a toujours un effet.
+
+| Sujet | Joueurs touchés |
 |---|---|
-| ROUGE, BLEU, VERT, JAUNE | le joueur de cette couleur |
+| ROUGE, BLEU, VERT, JAUNE | ce joueur |
 | TOUS | tous les joueurs |
-| LEADER | le joueur seul en tête de la manche (égalité en tête : personne) |
-| DERNIER | le joueur seul en queue de la manche (égalité en queue : personne) |
-| LAVE, MUR, COURONNE | toutes les cases de ce type |
-| CAISSE | toutes les caisses (objets posés sur la grille) |
+| LEADER, DERNIER | le premier, le dernier au score de la manche, **ex æquo compris** (à 0-0, tout le monde est à la fois leader et dernier) |
+| COURONNE | celui qui la porte |
+| LAVE | ceux qui sont dedans (le centre du joueur dans une case de lave) |
+| CAISSE, MUR | ceux qui les touchent |
 
-LEADER et DERNIER sont réévalués à chaque pas : la règle change de cible quand le classement change.
+- Une chose **transmet** sa propriété à qui la touche. Sauf pour POINTS et MORT, l'effet se prolonge 0,75 s après le contact, pour rester visible.
+- Un joueur visé par plusieurs lois **cumule** leurs effets (les vitesses se multiplient).
+- **MORT l'emporte sur tout** : une lave qui rapporte des points et qui tue ne rapporte rien.
 
-## Les effets : sujet × propriété
+## Les propriétés
 
-Les 7 sujets « joueur » ont le même effet (colonne Joueur) ; les 4 sujets « objet » aussi (colonne Objet). Les 99 combinaisons sont donc toutes définies, et toutes testées (`packages/shared/test/matrice.test.ts`).
+| Mot | Effet sur un joueur visé |
+|---|---|
+| **POINTS** | Il marque 1 point toutes les 0,5 s. Gravé dans la Loi d'or, jamais en mot libre. |
+| **MORT** | Il meurt. |
+| **LENT** | Sa vitesse est multipliée par 0,55. |
+| **RAPIDE** | Sa vitesse est multipliée par 1,5 et son dash se recharge deux fois plus vite. |
+| **GÉANT** | Il double de taille et perd 15 % de vitesse. Il bouscule joueurs et caisses en marchant, et ne peut être ni étourdi ni repoussé. |
+| **GLISSANT** | Il glisse comme sur de la glace. |
+| **INVERSÉ** | Ses commandes de déplacement sont inversées. |
+| **INVISIBLE** | Les autres joueurs ne le voient plus. Le mot qu'il porte et la couronne restent visibles. |
+| **DOUBLE** | Tous les points qu'il gagne sont doublés. |
+| **VOLEUR** | Quand il touche un joueur vivant, il lui prend 2 points, au plus une fois par seconde et par victime. |
 
-« Au contact » = la boîte du joueur touche la case de l'objet (marge 0,06 case), donc on est « au contact » d'un objet SOLIDE en s'appuyant dessus.
+Un changement de taille ne coince jamais un joueur : il est ramené sur le sol libre le plus proche.
 
-| Propriété | Joueur EST … | Objet EST … |
-|---|---|---|
-| **MORT** | Il meurt, et reste fantôme tant que la règle le vise. | Tue au contact. |
-| **POINTS** | Gagne 2 pts/s passivement. | Rapporte 4 pts/s au contact. |
-| **SOLIDE** | Ne peut plus traverser les autres joueurs ni être traversé ; insensible au dash et aux aimants. | Bloque le passage (joueurs et blocs). Une CAISSE solide se pousse et se tire comme un bloc. |
-| **RAPIDE** | Vitesse × 1,5. | Vitesse × 1,5 au contact. |
-| **LENT** | Vitesse × 0,55. | Vitesse × 0,55 au contact. |
-| **GÉANT** | Taille × 1,6 (ne passe plus dans un couloir d'une case, plus facile à toucher) ; pousse 5 blocs en chaîne au lieu de 3. | Zone de contact élargie de 0,5 case de chaque côté (la solidité, elle, ne grossit pas). |
-| **GLISSANT** | Inertie de patinoire. | Patinoire au contact. |
-| **AIMANT** | Attire les autres joueurs dans un rayon de 4 cases. | Attire les joueurs dans un rayon de 4 cases. |
-| **INVISIBLE** | N'est plus dessiné chez les autres (lui se voit en pointillé ; son dash le trahit). | N'est plus dessiné, mais agit toujours. |
+Tout mot ajouté plus tard doit passer ce test : **son effet se voit sur un joueur dans la seconde.**
 
-Particularités par objet : LAVE, MUR et COURONNE sont des cases fixes ; la CAISSE est le seul objet déplaçable (si SOLIDE). La COURONNE est une case unique : COURONNE EST POINTS fait un « roi de la colline ».
+## Score
 
-## Conflits : ordre de priorité
+- On marque par la Loi d'or, tant qu'on remplit sa condition.
+- L'auteur d'une loi gagne **3 points pour chaque autre joueur qu'elle tue**. Une phrase de départ ou tombée du ciel n'a pas d'auteur.
+- Un score ne descend jamais sous zéro.
+- Le plus de points à la fin gagne la manche.
 
-1. **Les contraires s'annulent.** MORT ↔ POINTS et RAPIDE ↔ LENT. Si un même sujet reçoit les deux (par une ou plusieurs phrases : ROUGE EST MORT + TOUS EST POINTS), aucune des deux ne s'applique. Pour la vitesse, les propriétés du joueur et celles des objets qu'il touche sont mises en commun avant l'annulation.
-2. **L'invulnérabilité** (1 s après réapparition) bat MORT et le dash.
-3. **MORT** bat tout le reste : un fantôme n'a plus aucune propriété, ne marque pas, n'est ni solide ni aimanté.
-4. **SOLIDE** est résolu avant le contact : on ne « touche » un objet solide que par son bord.
-5. Les autres propriétés se cumulent (GÉANT + GLISSANT + AIMANT…), les vitesses se multiplient.
+## Mort et fantômes
 
-On n'est jamais coincé : un joueur qui se retrouve dans une case devenue solide (ou sous un bloc tombé) peut toujours en sortir, mais pas y rentrer.
+- Tué **au contact d'une chose** : fantôme pendant 3 s, puis retour à son point de départ avec 1,5 s d'invulnérabilité.
+- Tué par une loi qui le vise **par sa couleur ou par un groupe** : fantôme tant que la loi le vise, puis retour 2 s après.
+- **Plafond** : une loi ne tient personne mort plus de 8 s. Passé ce délai le joueur revient, et cette loi ne peut plus le tuer tant qu'elle n'a pas été réécrite.
+- Un fantôme ne marque pas, ne porte pas la couronne et ne peut pas être étourdi. Il se déplace 20 % plus vite, garde son mot en mourant, et peut ramasser, poser et lancer : c'est ainsi qu'il réécrit la loi qui le tue.
 
-## Garde-fous
+## Mots du ciel
 
-- **Armement** : toute propriété qui arrive sur un joueur par une phrase à sujet « joueur » met 1 s à s'armer (avertissement visuel et sonore). Vaut aussi quand LEADER/DERNIER change de tête.
-- **Fantôme** : un mort ne marque plus mais pousse, tire et dashe (sans étourdir). Il réapparaît 3 s après sa mort si aucune règle MORT ne le vise ; sur un point d'apparition sûr, avec 1 s d'invulnérabilité.
-- **Blocs verrouillés** (rivets) : ni poussés ni tirés ; ils bloquent une chaîne.
-- **Chute de mots** : un mot du sac de l'arène tombe toutes les 20 s, annoncé 2 s avant par une ombre.
-- **Disette** : 10 s sans aucune règle POINTS → un bloc POINTS tombe (tant qu’il y en a moins de 3 en jeu).
-- **Auteur** : le joueur dont le déplacement de bloc fait apparaître une phrase en est l'auteur. Chaque victime de cette règle lui rapporte 3 pts (sauf lui-même) ; les points qu'elle distribue sont comptés dans ses statistiques. Les règles d'origine de l'arène et celles nées d'une chute n'ont pas d'auteur.
-
-## Actions
-
-- **Pousser** : marcher 0,13 s contre un bloc le fait glisser d'une case ; jusqu'à 3 blocs en chaîne.
-- **Agripper** (maintenir) : saisit le bloc en face ; reculer le tire d'une case. Vitesse × 0,75 pendant la prise.
-- **Dash** : ruée de 0,16 s, recharge 1,6 s. Le joueur touché est étourdi 0,5 s, repoussé, et lâche son bloc.
+- Chaque arène a une **pioche** de groupes et de propriétés. Toutes les 15 s, le mot suivant qui n'est pas déjà en jeu tombe au sol, annoncé 2 s avant par une ombre.
+- **Inertie** : une loi qui n'a pas changé depuis 20 s reçoit un mot du ciel directement dans son emplacement (la plus ancienne d'abord, au plus une toutes les 4 s). Le ciel reprend au besoin un mot qui traîne au sol ; pour la Loi d'or, c'est le nom de chose resté au sol le plus longtemps.
+- Au plus **8 mots libres** hors des châssis, couleurs non comptées. Au-delà, le groupe ou la propriété resté le plus longtemps sans être touché disparaît (il reviendra par la pioche). Les couleurs et les noms de choses ne disparaissent jamais.
 
 ## Match
 
-Manche de 90 s après 3 s de décompte. Le plus de points gagne la manche. Égalité en tête : mort subite, le premier seul en tête gagne (30 s max, puis tirage au sort entre ex æquo). Premier à 3 manches. Les arènes tournent.
+Manche de 90 s après 3 s de décompte (9 s avant la première, le temps de lire l'aide). Pendant les **15 dernières secondes** (« bouclage »), les points de la Loi d'or comptent double et les sceaux durent deux fois moins longtemps. Égalité en tête : mort subite, le premier seul en tête gagne (30 s max, puis tirage au sort entre ex æquo). Premier à 3 manches. Les arènes tournent.
 
-Toutes les valeurs ci-dessus sont dans `packages/shared/src/config.ts`.
+## Arènes
+
+| Arène | Départ | Personnalité |
+|---|---|---|
+| **Le Marbre** | COURONNE EST POINTS · LAVE EST MORT · LEADER EST LENT | Ouverte, une seule couronne : on se la vole au dash. Mots simples seulement (MORT, LENT, RAPIDE, GÉANT). |
+| **La Rotative** | CAISSE EST POINTS · LAVE EST GLISSANT · DERNIER EST RAPIDE | Moins de caisses que de joueurs, qu'on pousse hors de portée des autres. Introduit GLISSANT, INVERSÉ, DOUBLE. |
+| **Le Coffre** | COURONNE EST POINTS · DERNIER EST VOLEUR · COURONNE EST LENT · LAVE EST MORT | Grande arène, trois lois libres. La couronne est dans un coffre à portes étroites ; la troisième loi est sur une île de lave qu'on n'atteint qu'au lancer tant que la lave tue. Introduit INVISIBLE, VOLEUR. |
+
+Toutes les valeurs chiffrées sont dans `packages/shared/src/config.ts`. Les mesures d'équilibrage se relancent avec `npm run mesures`.
