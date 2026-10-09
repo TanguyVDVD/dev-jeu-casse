@@ -24,7 +24,7 @@ L'état d'avant la refonte des lois est conservé sous l'étiquette git `avant-r
 
 ## Règles ajoutées parce que les mesures ou les captures l'exigeaient
 
-- **Plafond de mort : 6 s.** « Fantôme tant que la loi le vise » ne garantit pas la cible « jamais plus de 12 s mort ». Une loi ne tient donc personne mort plus de 6 s ; ensuite elle l'épargne tant qu'elle n'est pas réécrite (et le bandeau cesse de dire qu'elle le touche).
+- **Plafond de mort : 4 s, puis 4 s de retour** (8 s au plus ; le retour valait 2 s avant un retour de jeu demandant qu'une loi tue 2 s de plus qu'un contact). « Fantôme tant que la loi le vise » ne garantit pas la cible « jamais plus de 12 s mort ». Une loi ne tient donc personne mort plus de 4 s ; ensuite elle l'épargne tant qu'elle n'est pas réécrite (et le bandeau cesse de dire qu'elle le touche).
 - **Pas de prime pour une loi qui condamne aussi son auteur.** À 0-0 tout le monde est leader et dernier : TOUS/LEADER/DERNIER EST MORT rapportait 9 points en un geste dès la première seconde, et les bots ouvraient chaque manche ainsi. Viser un adversaire rapporte toujours 3 points.
 - **Inertie découplée de la chute périodique.** Tel qu'écrit (« toutes les 15 s, dans la loi inchangée depuis 20 s »), trois lois immobiles attendent 35, 50 et 65 s : la cible des 40 s est intenable. Une loi inchangée depuis 20 s reçoit donc son mot sans attendre, la plus ancienne d'abord, à 4 s d'intervalle au moins.
 - **Le ciel peut reprendre un mot qui traîne au sol**, et le retire dès l'annonce : chaque mot n'existant qu'en un exemplaire, il n'y a sinon souvent rien à faire tomber, et un joueur qui ramassait le mot pendant l'ombre annulait la chute (loi restée 56 s inchangée sur 200 manches).
@@ -38,7 +38,7 @@ L'état d'avant la refonte des lois est conservé sous l'étiquette git `avant-r
 - **Le Prote lit la loi** par la synthèse vocale du navigateur (voix française, grave, rapide), coupée avec `M`. Qualité variable selon le système : à juger en soirée, une ligne à retirer dans `audio.ts` sinon.
 - **Leader et dernier marqués par une pastille encre** au-dessus du joueur, sauf quand tout le monde l'est (début de manche).
 - **Aide de cinq lignes pendant le décompte de la première manche**, qui dure 20 s ; 7 s avant les manches suivantes (3 s et 9 s ne laissaient pas le temps de lire, retour de jeu).
-- **Trois coupures de son indépendantes** (bruitages, musique, voix du Prote), en bas à gauche de l'écran, retenues d'une session à l'autre ; `M` coupe ou rétablit tout.
+- **Trois coupures de son indépendantes** (bruitages, musique, voix du Prote), en bas à gauche de l'écran, retenues d'une session à l'autre ; `M` coupe ou rétablit tout. `M` se lit comme une lettre et non comme un emplacement de touche : en AZERTY elle est ailleurs que sur un clavier QWERTY.
 - **Écran-titre, salon, une de fin, émotes, musique** : inchangés. Les titres de fin suivent les nouvelles statistiques (lois écrites, lancers réussis, mots attrapés au vol, points volés).
 
 ## Bots

@@ -476,13 +476,13 @@ surAppui((code) => {
 // bruitages, musique de fond et voix de l'annonceur se coupent séparément
 const NOM_PISTE = { sons: 'Bruitages', musique: 'Musique', voix: 'Voix' };
 function afficherSon(): void {
-  $('son').replaceChildren(...PISTES.map((p) => {
+  $('son').replaceChildren(el('span', '', 'Son'), ...PISTES.map((p) => {
     const b = el('button', estCoupe(p) ? 'coupe' : '', NOM_PISTE[p]);
     b.setAttribute('aria-pressed', String(!estCoupe(p)));
     b.title = `${estCoupe(p) ? 'Rétablir' : 'Couper'} : ${NOM_PISTE[p].toLowerCase()}`;
     b.onclick = () => { reveiller(); couper(p, !estCoupe(p)); afficherSon(); };
     return b;
-  }));
+  }), el('kbd', '', 'M'));
 }
 afficherSon();
 

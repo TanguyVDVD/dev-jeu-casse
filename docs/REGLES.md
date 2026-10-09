@@ -98,8 +98,8 @@ Tout mot ajouté plus tard doit passer ce test : **son effet se voit sur un joue
 ## Mort et fantômes
 
 - Tué **au contact d'une chose** : fantôme pendant 3 s, puis retour à son point de départ avec 1,5 s d'invulnérabilité.
-- Tué par une loi qui le vise **par sa couleur ou par un groupe** : fantôme tant que la loi le vise, puis retour 2 s après.
-- **Plafond** : une loi ne tient personne mort plus de 6 s. Passé ce délai le joueur revient, et cette loi ne peut plus le tuer tant qu'elle n'a pas été réécrite.
+- Tué par une loi qui le vise **par sa couleur ou par un groupe** : fantôme tant que la loi le vise, puis retour 4 s après. Être condamné par une loi coûte donc plus cher que tomber dans la lave.
+- **Plafond** : une loi ne tient personne mort plus de 4 s. Passé ce délai elle le lâche (il revient 4 s après, soit 8 s au plus), et elle ne peut plus le tuer tant qu'elle n'a pas été réécrite.
 - Un fantôme ne marque pas, ne porte pas la couronne et ne peut pas être étourdi. Il se déplace 20 % plus vite, garde son mot en mourant, et peut ramasser, poser et lancer : c'est ainsi qu'il réécrit la loi qui le tue.
 
 ## Mots du ciel

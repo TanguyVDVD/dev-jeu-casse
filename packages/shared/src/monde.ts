@@ -564,9 +564,9 @@ function fantome(w: Monde, p: Joueur): void {
   p.tMort++;
   const lois = condamnent(w, p);
   if (lois.length && p.tMort < ticks(CONFIG.fantome.max)) { p.retour = ticks(CONFIG.fantome.retour); return; }
-  // plafond atteint : la loi qui le tenait mort ne peut plus le tuer tant qu'elle n'est pas réécrite
+  // plafond atteint : la loi qui le tenait mort le lâche, et ne peut plus le tuer tant qu'elle n'est pas réécrite
   for (const l of lois) l.epargnes.push(p.id);
-  if (!lois.length && --p.retour > 0) return;
+  if (--p.retour > 0) return;
   const mortelles = CHOSES.filter((c) => w.lois.some((l) => l.arme === 0 && l.sujet === c && l.prop === 'MORT'));
   const n = w.arene.spawns.length;
   // son point de départ, sauf s'il touche quelque chose qui tue

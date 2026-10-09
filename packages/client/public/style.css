@@ -135,9 +135,14 @@ body:not(.hote) .hote { display: none; }
 
 #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); background: var(--encre); color: var(--papier); padding: 8px 16px; font-weight: 700; opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90vw; }
 #toast.vu { opacity: 1; }
-#son { position: fixed; left: 10px; bottom: 8px; display: flex; gap: 6px; }
-#son button { font: 700 12px var(--texte); text-transform: none; letter-spacing: 0; padding: 4px 8px; background: var(--papier); color: var(--encre); box-shadow: inset 0 0 0 2px var(--encre); }
-#son button.coupe { text-decoration: line-through; opacity: .55; }
+/* le son : une réglette de casse, trois tiroirs qu'on ferme un par un */
+#son { position: fixed; left: 14px; bottom: 12px; display: flex; align-items: stretch; border: 3px solid var(--encre); background: var(--papier); box-shadow: 4px 4px 0 var(--encre); font: 700 12px/1 var(--texte); }
+#son span { background: var(--encre); color: var(--papier); padding: 7px 8px 5px; letter-spacing: .2em; text-transform: uppercase; }
+#son button { font: inherit; text-transform: none; letter-spacing: 0; padding: 7px 10px 5px; background: none; color: var(--encre); box-shadow: none; border-right: 2px solid var(--encre); transform: none; }
+#son button:hover { background: var(--trame); }
+#son button.coupe { text-decoration: line-through var(--j0) 2px; color: #6B6257; background: repeating-linear-gradient(-45deg, transparent 0 4px, var(--trame) 4px 6px); }
+#son kbd { border: 0; align-self: center; padding: 0 8px; }
+@media (max-width: 900px) { #son span, #son kbd { display: none; } }
 
 @media (max-width: 900px) {
   #scene { grid-template-columns: 1fr; }

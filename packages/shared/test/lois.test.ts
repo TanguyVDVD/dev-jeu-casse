@@ -265,10 +265,10 @@ test('tué au contact d’une chose : fantôme 3 s, puis retour au départ avec 
   assert.ok(p.mort);
 });
 
-test('tué par sa couleur ou un groupe : fantôme tant que la loi le vise, retour 2 s après', () => {
+test('tué par sa couleur ou un groupe : fantôme tant que la loi le vise, retour 4 s après', () => {
   const w = monde();
   decreter(w, 1, 'ROUGE', 'MORT');
-  tourner(w, ticks(5));
+  tourner(w, ticks(2));
   assert.ok(w.joueurs[0].mort, 'toujours visé, toujours mort');
   decreter(w, 1, 'ROUGE', 'LENT');
   tourner(w, ticks(CONFIG.fantome.retour) - 1);
@@ -277,11 +277,12 @@ test('tué par sa couleur ou un groupe : fantôme tant que la loi le vise, retou
   assert.ok(!w.joueurs[0].mort);
 });
 
-test('plafond : une loi ne tient personne mort plus de 6 s, et ne peut plus le tuer ensuite', () => {
+test('plafond : une loi ne tient personne mort plus de 4 s (8 s avec le délai de retour), et ne peut plus le tuer ensuite', () => {
   const w = monde();
   decreter(w, 1, 'LEADER', 'MORT');
-  tourner(w, ticks(CONFIG.fantome.max) - 1);
+  tourner(w, ticks(CONFIG.fantome.max) + ticks(CONFIG.fantome.retour) - 2);
   assert.ok(w.joueurs.every((p) => p.mort));
+  assert.deepEqual(w.lois[1].touches, [], 'la loi les a lâchés : le retour est en route');
   tourner(w, 1);
   assert.ok(w.joueurs.every((p) => !p.mort));
   tourner(w, ticks(CONFIG.joueur.invulnerable) + 30);

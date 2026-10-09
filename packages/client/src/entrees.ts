@@ -16,7 +16,9 @@ addEventListener('keydown', (e) => {
   touches.add(e.code);
   if (DASH.includes(e.code)) dashDemande = true;
   if (ACTION.includes(e.code)) actionDemandee = true;
-  for (const f of ecouteurs) f(e.code);
+  // M est une lettre, pas un emplacement : en AZERTY elle n'est pas sur la touche physique « KeyM »
+  const code = e.key.toLowerCase() === 'm' ? 'KeyM' : e.code === 'KeyM' ? '' : e.code;
+  for (const f of ecouteurs) f(code);
 });
 addEventListener('keyup', (e) => touches.delete(e.code));
 addEventListener('blur', () => touches.clear());
