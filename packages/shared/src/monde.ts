@@ -370,9 +370,12 @@ const HUIT = [[1, 0], [0, 1], [-1, 0], [0, -1], [0.7, 0.7], [-0.7, 0.7], [0.7, -
 /** Un changement de taille (ou une caisse poussée sur lui) ne coince jamais un joueur : il est ramené sur le sol libre le plus proche. */
 function degager(w: Monde, p: Joueur): void {
   if (!bloque(w, p, p.x, p.y)) return;
-  for (let r = 0.1; r <= 2.5; r += 0.1)
-    for (const [ax, ay] of HUIT)
-      if (!bloque(w, p, p.x + ax * r, p.y + ay * r)) { p.x += ax * r; p.y += ay * r; return; }
+  // d'abord sans jamais faire passer son centre à travers un mur ou une caisse ; à défaut, n'importe où plutôt que coincé
+  const traverse = (ax: number, ay: number, r: number) => { for (let d = 0; d <= r; d += 0.25) if (solideEn(w, Math.floor(p.x + ax * d), Math.floor(p.y + ay * d))) return true; return false; };
+  for (const partout of [false, true])
+    for (let r = 0.1; r <= 2.5; r += 0.1)
+      for (const [ax, ay] of HUIT)
+        if (!bloque(w, p, p.x + ax * r, p.y + ay * r) && (partout || !traverse(ax, ay, r))) { p.x += ax * r; p.y += ay * r; return; }
 }
 
 /** Avance sur un axe, s'arrête au ras des obstacles ; renvoie la caisse heurtée de face. */

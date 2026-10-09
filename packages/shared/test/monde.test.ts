@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import {
-  ARENES, CONFIG, COULEURS, creerMonde, famille, intention, memoireBot, pas, penser, ticks, validerArene,
+  ARENES, CONFIG, COULEURS, creerMonde, demi, famille, intention, loi, memoireBot, pas, penser, solideEn, ticks, tuileEn, validerArene,
   type Entree, type Monde, type Mot,
 } from '../src/index';
 import { ACTION, CARTE, decreter, monde, placer, tourner, toucher, vers } from './outils';
@@ -380,6 +380,36 @@ for (const ar of ARENES)
     assert.ok(Math.max(...w.joueurs.map((p) => p.score)) > 0, 'quelqu’un marque');
     assert.ok(ecrites > 0, 'des lois sont réécrites');
   });
+
+for (const ar of ARENES)
+  for (const sujet of ['TOUS', 'MUR', 'CAISSE'] as const)
+    test(`${ar.id}, ${sujet} EST GÉANT : des géants agités ne traversent aucun mur et ne restent jamais coincés`, () => {
+      if (!ar.carte.join('').includes(sujet === 'MUR' ? 'M' : 'C') && sujet !== 'TOUS') return;
+      let g = 7;
+      const hasard = () => { g = (g * 1103515245 + 12345) & 0x7fffffff; return g / 0x80000000; };
+      const w = creerMonde(ar, [0, 1, 2, 3], 3);
+      w.phase = 'jeu'; w.temps = 1e9; w.chuteDans = 1e9;
+      w.lois = w.lois.map((l, ch) => ({ ...loi(ch === 1 ? sujet : l.sujet, ch === 1 ? 'GEANT' : l.prop === 'MORT' ? 'LENT' : l.prop), age: -1e9, sceaux: [1e9, 1e9] as [number, number] })); // lois figées : personne ne meurt
+      const cap = w.joueurs.map(() => ({ mx: 0, my: 0, n: 0 })), coince = w.joueurs.map(() => 0);
+      for (let t = 0; t < 1800; t++) {
+        const entrees: Record<number, Entree> = {};
+        w.joueurs.forEach((p, i) => {
+          if (--cap[i].n <= 0) cap[i] = { mx: Math.floor(hasard() * 3) - 1, my: Math.floor(hasard() * 3) - 1, n: 5 + Math.floor(hasard() * 50) };
+          entrees[p.id] = vers(cap[i].mx, cap[i].my, { dash: hasard() < 0.03, action: hasard() < 0.04 });
+        });
+        const avant = w.joueurs.map((p) => ({ x: p.x, y: p.y }));
+        pas(w, entrees);
+        w.joueurs.forEach((p, i) => {
+          for (let k = 1; k < 8; k++) assert.ok(!solideEn(w, Math.floor(avant[i].x + ((p.x - avant[i].x) * k) / 8), Math.floor(avant[i].y + ((p.y - avant[i].y) * k) / 8)) || tuileEn(w, Math.floor(avant[i].x + ((p.x - avant[i].x) * k) / 8), Math.floor(avant[i].y + ((p.y - avant[i].y) * k) / 8)) !== 'MUR', `pas ${t} : j${p.id} a traversé un mur`);
+          // un pas de chevauchement est normal (il vient de grandir, on vient de pousser une caisse sur lui) ; pas trois
+          const h = demi(p) - 1e-6;
+          const dedans = [[-h, -h], [h, -h], [-h, h], [h, h]].some(([dx, dy]) => solideEn(w, Math.floor(p.x + dx), Math.floor(p.y + dy)));
+          coince[i] = dedans ? coince[i] + 1 : 0;
+          assert.ok(coince[i] < 3, `pas ${t} : j${p.id} coincé dans un obstacle`);
+        });
+        for (const c of w.caisses) assert.ok(tuileEn(w, c.x, c.y) !== 'MUR' && w.caisses.every((k) => k === c || k.x !== c.x || k.y !== c.y), `pas ${t} : caisse mal placée`);
+      }
+    });
 
 test('le bot replanifie à la manche suivante (sa mémoire survit, pas le compteur de pas)', () => {
   const mem = memoireBot();

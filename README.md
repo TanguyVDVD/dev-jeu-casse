@@ -57,7 +57,7 @@ Node 20 ou plus.
 ```
 npm install
 npm run dev          # construit puis sert http://localhost:8080
-npm test             # 139 tests (moteur de lois, gestes, mots du ciel, bots, salons)
+npm test             # 148 tests (moteur de lois, gestes, mots du ciel, bots, salons)
 npm run typecheck
 npm run simulation   # 4 clients WebSocket jouent un match complet ; --latence 100 pour simuler du délai
 npm run mesures      # 200 manches à 4 bots par arène, comparées aux cibles d'équilibrage
