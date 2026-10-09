@@ -375,9 +375,9 @@ function majScores(forcer = false): void {
   const signature = w.lois.map((l) => `${l.sujet}${l.prop}${l.auteur}${l.arme > 0}${l.touches}${l.victimes}`).join('|');
   if (signature === signatureLois) return;
   signatureLois = signature;
-  $('regles').replaceChildren(el('h3', '', 'En vigueur'), ...w.lois.map((l, ch) => {
+  $('lois').replaceChildren(el('h3', '', 'En vigueur'), ...w.lois.map((l, ch) => {
     const touches = el('span', 'touches', ...l.touches.map(svgForme));
-    const ligne = el('div', `regle${ch === 0 ? ' or' : ''}${l.arme > 0 ? ' arme' : l.touches.length ? '' : ' vide'}`, el('span', 'phrase', phrase(l)), touches);
+    const ligne = el('div', `enonce${ch === 0 ? ' or' : ''}${l.arme > 0 ? ' arme' : l.touches.length ? '' : ' vide'}`, el('span', 'phrase', phrase(l)), touches);
     ligne.style.setProperty('--c', l.auteur >= 0 ? COULEUR[l.auteur] : ENCRE);
     if (l.victimes) touches.append(el('small', '', `${l.victimes} †`));
     return ligne;

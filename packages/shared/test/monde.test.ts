@@ -68,8 +68,22 @@ test('mot en main, face à un emplacement compatible à portée : l’action le 
   assert.equal(w.joueurs[0].stats.ecrites, 1);
   const ancien = auSol(w, 'LENT')!;
   // droit devant, il retomberait sur la Loi d'or : il part sur le côté, à deux cases
-  proche(Math.hypot(ancien.x - 4, ancien.y - 2.5), CONFIG.geste.ejection, 1e-6);
-  assert.equal(Math.floor(ancien.y), 2);
+  assert.deepEqual([ancien.x, ancien.y], [4 + CONFIG.geste.ejection, 2.5]);
+});
+
+test('un mot ne reste jamais couché sur un châssis ni à cheval sur un bord : il glisse à côté', () => {
+  const w = monde({ n: 2 });
+  armer(w, 1, 'MORT', 2.5, 2.6, 0, 1); // debout sur le châssis 1, mot en main
+  placer(w, 0, 1.6, 2.6);
+  tourner(w, 1, { 0: vers(1, 0, { dash: true }) });
+  tourner(w, 3, { 0: vers(1, 0) });
+  const m = auSol(w, 'MORT')!;
+  assert.ok(m.y <= 1.6 || m.y >= 3.4, `lâché sur la loi, il est en y = ${m.y}`);
+  armer(w, 1, 'GEANT', 13.2, 8.5, 1, 0);
+  w.joueurs[1].etourdi = 0;
+  tourner(w, 1, { 1: ACTION });
+  tourner(w, 20);
+  assert.equal(auSol(w, 'GEANT')!.x, 13.1, 'lancé contre le bord, il reste entier dans l’arène');
 });
 
 test('pas de pose dos à l’emplacement, ni d’un mot identique, ni sur un sceau : le bouton lance', () => {
@@ -221,6 +235,26 @@ test('une loi inchangée depuis 20 s reçoit le mot du ciel dans son emplacement
   assert.ok(auSol(w, 'CAISSE'), 'le mot remplacé retombe au sol');
 });
 
+test('la Loi d’or trop vieille : faute de nom de chose au sol, le ciel reprend celui qu’un joueur garde en main', () => {
+  const w = monde({ pioche: ['TOUS'] });
+  w.joueurs[2].porte = 'LAVE';
+  w.lois[0].age = ticks(CONFIG.chute.inertie);
+  w.derniereChute = -1e6;
+  tourner(w, 1);
+  assert.equal(w.joueurs[2].porte, null);
+  tourner(w, ticks(CONFIG.chute.ombre));
+  assert.equal(w.lois[0].sujet, 'LAVE');
+});
+
+test('le ciel passe à la loi suivante quand la plus ancienne ne peut rien recevoir', () => {
+  const w = monde({ pioche: ['TOUS'] });
+  w.lois[0].age = ticks(CONFIG.chute.inertie) + 50; // aucun nom de chose disponible pour la Loi d'or
+  w.lois[1].age = ticks(CONFIG.chute.inertie);
+  w.derniereChute = -1e6;
+  tourner(w, 1);
+  assert.deepEqual(w.ombres.map((o) => [o.mot, o.ch]), [['TOUS', 1]]);
+});
+
 test('la Loi d’or trop vieille reçoit un nom de chose repris au sol', () => {
   const w = monde({ mots: [{ x: 6, y: 6, mot: 'LAVE' }], pioche: ['TOUS'] });
   w.lois[0].age = ticks(CONFIG.chute.inertie);
@@ -288,6 +322,9 @@ test('au moins trois arènes valides : Loi d’or, 2 ou 3 lois libres, 5 à 7 mo
     assert.ok(ar.mots.length >= 5 && ar.mots.length <= 7, `${ar.id} : ${ar.mots.length} mots au sol`);
     const w = creerMonde(ar, [0, 1, 2, 3], 1);
     assert.ok(w.caisses.length < 4, 'moins de caisses que de joueurs');
+    // la Loi d'or doit toujours pouvoir être réécrite : les lois libres ne peuvent pas retenir tous les autres noms de choses
+    const choses = [...ar.chassis.map((c) => c.sujet), ...ar.mots.map((m) => m.mot)].filter((m) => famille(m) === 'chose');
+    for (const m of new Set(choses)) assert.ok(choses.filter((k) => k !== m).length > ar.chassis.length - 1, `${ar.id} : rien pour remplacer ${m} dans la Loi d'or`);
   }
   const premiere = [...ARENES[0].chassis.map((c) => c.prop), ...ARENES[0].mots.map((m) => m.mot), ...ARENES[0].pioche].filter((m) => famille(m) === 'prop');
   assert.deepEqual([...new Set(premiere)].sort(), ['GEANT', 'LENT', 'MORT', 'POINTS', 'RAPIDE'], 'la première arène se limite aux mots simples');

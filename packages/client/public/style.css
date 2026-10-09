@@ -84,18 +84,18 @@ body:not(.hote) .hote { display: none; }
 #scene { flex: 1; min-height: 0; width: 100%; display: grid; grid-template-columns: minmax(150px, 230px) 1fr minmax(150px, 230px); gap: 12px; position: relative; }
 #cadre { min-width: 0; min-height: 0; display: flex; align-items: center; justify-content: center; }
 #toile { border: 4px solid var(--encre); box-shadow: 7px 7px 0 var(--encre); background: var(--papier); image-rendering: auto; }
-#regles, #fil { text-align: left; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
-#regles h3, #fil h3 { font: 700 12px var(--texte); letter-spacing: .25em; text-transform: uppercase; border-bottom: 3px solid var(--encre); padding-bottom: 3px; }
-.regle { font: 21px/1.05 var(--titre); padding: 5px 7px 4px; background: var(--papier); color: var(--encre); border: 3px solid var(--encre); box-shadow: 4px 4px 0 var(--c); display: flex; flex-direction: column; gap: 3px; margin-right: 5px; }
-.regle.or { background: var(--encre); color: var(--papier); }
-.regle.vide { opacity: .55; box-shadow: none; }
-.regle.arme { animation: armer .22s steps(2) infinite; }
-.regle .touches { display: flex; gap: 4px; align-items: center; min-height: 17px; }
-.regle.vide .touches::before { content: "ne touche personne"; font: 11px var(--texte); }
-.regle.arme .touches::before { content: "s’arme…"; font: 700 11px var(--texte); }
-.regle svg { width: 17px; height: 17px; flex: none; }
-.regle.or svg circle, .regle.or svg polygon { stroke: var(--papier); }
-.regle small { font: 700 11px var(--texte); margin-left: auto; white-space: nowrap; }
+#lois, #fil { text-align: left; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+#lois h3, #fil h3 { font: 700 12px var(--texte); letter-spacing: .25em; text-transform: uppercase; border-bottom: 3px solid var(--encre); padding-bottom: 3px; }
+.enonce { font: 21px/1.05 var(--titre); padding: 5px 7px 4px; background: var(--papier); color: var(--encre); border: 3px solid var(--encre); box-shadow: 4px 4px 0 var(--c); display: flex; flex-direction: column; gap: 3px; margin-right: 5px; }
+.enonce.or { background: var(--encre); color: var(--papier); }
+.enonce.vide { opacity: .55; box-shadow: none; }
+.enonce.arme { animation: armer .22s steps(2) infinite; }
+.enonce .touches { display: flex; gap: 4px; align-items: center; min-height: 17px; }
+.enonce.vide .touches::before { content: "ne touche personne"; font: 11px var(--texte); }
+.enonce.arme .touches::before { content: "s’arme…"; font: 700 11px var(--texte); }
+.enonce svg { width: 17px; height: 17px; flex: none; }
+.enonce.or svg circle, .enonce.or svg polygon { stroke: var(--papier); }
+.enonce small { font: 700 11px var(--texte); margin-left: auto; white-space: nowrap; }
 @keyframes armer { 50% { background: var(--j0); color: var(--papier); } }
 .evenement { font-size: 13px; line-height: 1.25; border-bottom: 1px dashed var(--encre); padding-bottom: 5px; animation: glisser .2s ease-out; }
 .evenement b { font: 15px var(--titre); letter-spacing: .02em; white-space: nowrap; }
@@ -139,8 +139,8 @@ body:not(.hote) .hote { display: none; }
 
 @media (max-width: 900px) {
   #scene { grid-template-columns: 1fr; }
-  #regles, #fil { position: absolute; top: 4px; width: 42%; pointer-events: none; }
-  #regles { left: 4px; } #fil { right: 4px; }
+  #lois, #fil { position: absolute; top: 4px; width: 42%; pointer-events: none; }
+  #lois { left: 4px; } #fil { right: 4px; }
   .places { grid-template-columns: repeat(2, 1fr); }
 }
 @media (prefers-reduced-motion: reduce) { *, *::before { animation-duration: .01s !important; transition: none !important; } }

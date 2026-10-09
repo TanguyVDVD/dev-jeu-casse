@@ -43,13 +43,13 @@
    "prop": "POINTS"
   },
   {
-   "x": 0,
+   "x": 1,
    "y": 5,
    "sujet": "DERNIER",
    "prop": "VOLEUR"
   },
   {
-   "x": 17,
+   "x": 16,
    "y": 5,
    "sujet": "COURONNE",
    "prop": "LENT"
@@ -95,7 +95,7 @@
   {
    "x": 11,
    "y": 0,
-   "mot": "INVERSE"
+   "mot": "MUR"
   }
  ],
  "pioche": [

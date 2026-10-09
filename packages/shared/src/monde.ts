@@ -185,10 +185,15 @@ export function touche(w: Monde, p: Joueur, chose: Chose): boolean {
   return false;
 }
 
-/** Un mot au sol reste entier dans l'arène, lisible : jamais à cheval sur un bord. */
+/** Un mot au sol reste lisible et laisse lire les lois : jamais à cheval sur un bord, jamais couché sur un châssis. */
 const caler = (w: Monde, m: { x: number; y: number }) => {
   m.x = Math.max(0.9, Math.min(largeur(w) - 0.9, m.x));
   m.y = Math.max(0.4, Math.min(hauteur(w) - 0.4, m.y));
+  for (const c of w.arene.chassis) {
+    if (m.x <= c.x - 0.8 || m.x >= c.x + LARGEUR_CHASSIS + 0.8 || m.y <= c.y - 0.4 || m.y >= c.y + 1.4) continue;
+    // il glisse du côté le plus proche, au-dessus ou au-dessous
+    m.y = c.y + 1 >= hauteur(w) || (m.y < c.y + 0.5 && c.y >= 1) ? c.y - 0.45 : c.y + 1.45;
+  }
 };
 
 function semer(w: Monde, mot: Mot, x: number, y: number): void {
@@ -478,26 +483,43 @@ function chocs(w: Monde): void {
 const pris = (w: Monde, mot: Mot) => w.lois.some((l) => l.sujet === mot || l.prop === mot) || w.joueurs.some((p) => p.porte === mot);
 const attendu = (w: Monde, mot: Mot) => w.ombres.some((o) => o.mot === mot);
 
-/** Choisit le prochain mot du ciel : dans la loi restée inchangée trop longtemps, sinon au sol. */
-function planifier(w: Monde, vieille: number, auSol: boolean): void {
+/**
+ * Choisit le prochain mot du ciel : dans une loi restée inchangée trop longtemps (la plus ancienne
+ * d'abord), sinon au sol. Un mot que le ciel reprend quitte le sol dès l'annonce : rien ne peut l'en empêcher.
+ */
+function planifier(w: Monde, vieilles: number[], auSol: boolean): void {
   const ar = w.arene, t = ticks(CONFIG.chute.ombre);
   const annoncer = (o: Ombre) => { w.ombres.push(o); w.evts.push({ t: 'ombre', x: o.x, y: o.y, mot: o.mot }); };
   const piocher = (bon: (m: Mot) => boolean): Mot | undefined => {
     for (let k = 0; k < ar.pioche.length; k++) {
       const i = (w.pioche + k) % ar.pioche.length;
-      if (bon(ar.pioche[i])) { w.pioche = i + 1; return ar.pioche[i]; }
+      if (bon(ar.pioche[i]) && !pris(w, ar.pioche[i]) && !attendu(w, ar.pioche[i])) { w.pioche = i + 1; return ar.pioche[i]; }
     }
   };
-  if (vieille >= 0) {
+  const reprendre = (m: MotLibre | undefined): Mot | undefined => {
+    if (!m) return;
+    w.mots = w.mots.filter((k) => k !== m);
+    w.version++;
+    w.evts.push({ t: 'efface', x: m.x, y: m.y, mot: m.mot });
+    return m.mot;
+  };
+  const posee = (mot: Mot) => w.mots.find((m) => m.mot === mot && m.reste <= 0);
+  for (const ch of vieilles) {
     const cote = (m: Mot) => (famille(m) === 'prop' ? 1 : 0);
-    // la Loi d'or ne reçoit que des noms de choses : le ciel reprend celui qui traîne au sol depuis le plus longtemps
-    const mot = vieille === 0
-      ? w.mots.filter((m) => m.reste <= 0 && compatible(w, 0, 0, m.mot) && !attendu(w, m.mot)).sort((m1, m2) => m1.ne - m2.ne)[0]?.mot
-      : piocher((m) => compatible(w, vieille, cote(m), m) && !pris(w, m) && !attendu(w, m) && !w.mots.some((k) => k.mot === m && k.reste > 0));
-    if (mot) return annoncer({ ...emplacement(ar, vieille, cote(mot)), mot, t, ch: vieille, cote: cote(mot) });
+    let mot: Mot | undefined;
+    if (ch === 0) {
+      // la Loi d'or ne reçoit que des noms de choses : celui qui traîne au sol depuis le plus longtemps, à défaut celui qu'un joueur garde en main
+      mot = reprendre(w.mots.filter((m) => m.reste <= 0 && compatible(w, 0, 0, m.mot)).sort((m1, m2) => m1.ne - m2.ne)[0]);
+      const porteur = mot ? undefined : w.joueurs.find((p) => p.porte && compatible(w, 0, 0, p.porte));
+      if (porteur) { mot = porteur.porte!; porteur.porte = null; w.evts.push({ t: 'efface', x: porteur.x, y: porteur.y, mot }); }
+    } else {
+      // d'abord un mot qui n'est nulle part, sinon un mot qui traîne au sol
+      mot = piocher((m) => compatible(w, ch, cote(m), m) && !w.mots.some((k) => k.mot === m))
+        ?? reprendre(posee(piocher((m) => compatible(w, ch, cote(m), m) && !!posee(m)) as Mot));
+    }
+    if (mot) return annoncer({ ...emplacement(ar, ch, cote(mot)), mot, t, ch, cote: cote(mot) });
   }
-  if (!auSol) return;
-  const mot = piocher((m) => !pris(w, m) && !attendu(w, m) && !w.mots.some((k) => k.mot === m));
+  const mot = auSol && piocher((m) => !w.mots.some((k) => k.mot === m));
   for (let essai = 0; mot && essai < 60; essai++) {
     const x = Math.floor(alea(w) * largeur(w)) + 0.5, y = Math.floor(alea(w) * hauteur(w)) + 0.5;
     if (solideEn(w, Math.floor(x), Math.floor(y)) || tuileEn(w, Math.floor(x), Math.floor(y)) || surChassis(w, x, y) || w.ombres.some((o) => o.x === x && o.y === y)) continue;
@@ -509,24 +531,19 @@ function chutes(w: Monde): void {
   for (const o of w.ombres) {
     if (--o.t > 0) continue;
     if (o.ch < 0) semer(w, o.mot, o.x, o.y);
-    else {
-      // le ciel reprend le mot là où il traîne ; si quelqu'un l'a ramassé entre-temps, il renonce
-      const auSol = w.mots.find((m) => m.mot === o.mot && m.reste <= 0);
-      if (famille(o.mot) === 'chose' ? !auSol : pris(w, o.mot) || w.mots.some((m) => m.mot === o.mot && m.reste > 0)) continue;
-      w.mots = w.mots.filter((m) => m !== auSol);
-      if (compatible(w, o.ch, o.cote, o.mot)) poser(w, o.ch, o.cote, o.mot, -1, o.x, o.y - 1);
-      else ejecter(w, o.mot, o, 0, 1);
-    }
+    else if (compatible(w, o.ch, o.cote, o.mot)) poser(w, o.ch, o.cote, o.mot, -1, o.x, o.y - 1);
+    else ejecter(w, o.mot, o, 0, 1); // la loi a changé entre-temps : le mot tombe à côté
     w.evts.push({ t: 'chute', x: o.x, y: o.y, mot: o.mot });
   }
   w.ombres = w.ombres.filter((o) => o.t > 0);
   // une loi restée inchangée trop longtemps reçoit un mot du ciel, sans attendre la chute périodique
-  const vieille = w.lois.reduce((v, l, ch) => (l.age >= ticks(CONFIG.chute.inertie) && !w.ombres.some((o) => o.ch === ch) && (v < 0 || l.age > w.lois[v].age) ? ch : v), -1);
+  const vieilles = w.lois.map((_, ch) => ch).filter((ch) => w.lois[ch].age >= ticks(CONFIG.chute.inertie) && !w.ombres.some((o) => o.ch === ch))
+    .sort((c1, c2) => w.lois[c2].age - w.lois[c1].age);
   const periodique = --w.chuteDans <= 0;
   if (periodique) w.chuteDans = ticks(CONFIG.chute.periode);
-  if (!periodique && (vieille < 0 || w.tick - w.derniereChute < ticks(CONFIG.chute.ecart))) return;
+  if (!periodique && (!vieilles.length || w.tick - w.derniereChute < ticks(CONFIG.chute.ecart))) return;
   w.derniereChute = w.tick;
-  planifier(w, vieille, periodique);
+  planifier(w, vieilles, periodique);
 }
 
 /** Pas plus de mots libres que le plafond : le groupe ou la propriété qui traîne depuis le plus longtemps disparaît. */

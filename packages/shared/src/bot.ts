@@ -184,6 +184,11 @@ export function penser(w: Monde, id: number, mem: MemoireBot): Entree {
     dx = (proie.x - p.x) / n; dy = (proie.y - p.y) / n;
     entree.dash = true;
   }
+  if (v && v.ch < 0 && !voulu) {
+    // pour se débarrasser d'un mot, il se tourne vers une direction où aucun emplacement ne l'aimante
+    const sortie = HUIT.find(([fx, fy]) => { const essai = intention(w, { ...p, fx: fx / Math.hypot(fx, fy), fy: fy / Math.hypot(fx, fy) }); return essai?.t === 'lancer' && essai.ch < 0; });
+    if (sortie) [dx, dy] = sortie;
+  }
   const sens = a(p.props, 'inverse') ? -1 : 1; // commandes inversées : il compense, comme un joueur qui a compris
   entree.mx = Math.max(-1, Math.min(1, dx * sens));
   entree.my = Math.max(-1, Math.min(1, dy * sens));
