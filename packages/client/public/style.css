@@ -137,6 +137,8 @@ body:not(.hote) .hote { display: none; }
 #toast.vu { opacity: 1; }
 /* le son : une réglette de casse, trois tiroirs qu'on ferme un par un */
 #son { position: fixed; left: 14px; bottom: 12px; display: flex; align-items: stretch; border: 3px solid var(--encre); background: var(--papier); box-shadow: 4px 4px 0 var(--encre); font: 700 12px/1 var(--texte); }
+/* en jeu, la réglette monte dans la colonne des lois : la ligne des commandes reste lisible */
+#jeu:not([hidden]) ~ #son { bottom: 46px; }
 #son span { background: var(--encre); color: var(--papier); padding: 7px 8px 5px; letter-spacing: .2em; text-transform: uppercase; }
 #son button { font: inherit; text-transform: none; letter-spacing: 0; padding: 7px 10px 5px; background: none; color: var(--encre); box-shadow: none; border-right: 2px solid var(--encre); transform: none; }
 #son button:hover { background: var(--trame); }
