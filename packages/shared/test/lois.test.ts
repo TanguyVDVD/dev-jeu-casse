@@ -219,14 +219,23 @@ test('emplacements : la Loi d’or ne prend que des choses, POINTS est gravé, p
 
 test('le châssis prend l’auteur du dernier mot posé, qui touche 3 points par autre joueur tué', () => {
   const w = monde();
-  ecrire(w, 1, 0, 'TOUS', 1);
+  w.joueurs[3].score = 1; // JAUNE n'est plus dernier : la loi ne le vise pas
+  ecrire(w, 1, 0, 'DERNIER', 1);
   ecrire(w, 1, 1, 'MORT', 3);
   assert.equal(w.lois[1].auteur, 3);
   tourner(w, ticks(CONFIG.loi.armement));
-  assert.equal(w.joueurs[3].score, 3 * CONFIG.points.victime, 'trois autres joueurs, rien pour sa propre mort');
+  assert.equal(w.joueurs[3].score, 1 + 3 * CONFIG.points.victime);
   assert.equal(w.joueurs[3].stats.victimes, 3);
-  assert.equal(w.lois[1].victimes, 4);
-  assert.deepEqual(w.evts.filter((e) => e.t === 'mort').map((e) => e.t === 'mort' && [e.par, e.ch]), [[3, 1], [3, 1], [3, 1], [3, 1]]);
+  assert.equal(w.lois[1].victimes, 3);
+  assert.deepEqual(w.evts.filter((e) => e.t === 'mort').map((e) => e.t === 'mort' && [e.par, e.ch]), [[3, 1], [3, 1], [3, 1]]);
+});
+
+test('une loi qui condamne aussi son auteur ne lui rapporte rien', () => {
+  const w = monde();
+  ecrire(w, 1, 0, 'TOUS', 3);
+  ecrire(w, 1, 1, 'MORT', 3);
+  tourner(w, ticks(CONFIG.loi.armement));
+  assert.ok(w.joueurs.every((p) => p.mort && p.score === 0));
 });
 
 test('une phrase de départ n’a pas d’auteur : ses morts ne rapportent à personne', () => {
@@ -268,7 +277,7 @@ test('tué par sa couleur ou un groupe : fantôme tant que la loi le vise, retou
   assert.ok(!w.joueurs[0].mort);
 });
 
-test('plafond : une loi ne tient personne mort plus de 8 s, et ne peut plus le tuer ensuite', () => {
+test('plafond : une loi ne tient personne mort plus de 6 s, et ne peut plus le tuer ensuite', () => {
   const w = monde();
   decreter(w, 1, 'LEADER', 'MORT');
   tourner(w, ticks(CONFIG.fantome.max) - 1);
@@ -277,6 +286,7 @@ test('plafond : une loi ne tient personne mort plus de 8 s, et ne peut plus le t
   assert.ok(w.joueurs.every((p) => !p.mort));
   tourner(w, ticks(CONFIG.joueur.invulnerable) + 30);
   assert.ok(w.joueurs.every((p) => !p.mort), 'épargnés tant que la loi n’est pas réécrite');
+  assert.deepEqual(w.lois[1].touches, [], 'et elle ne prétend plus toucher personne');
   ecrire(w, 1, 0, 'TOUS', -1);
   tourner(w, ticks(CONFIG.loi.armement));
   assert.ok(w.joueurs.every((p) => p.mort), 'une loi réécrite tue de nouveau');

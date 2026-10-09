@@ -73,7 +73,7 @@ export function appliquerLois(w: Monde): void {
   for (const l of w.lois) {
     l.touches = [];
     if (l.arme > 0) continue;
-    const cibles = resoudre(w, l.sujet);
+    const cibles = resoudre(w, l.sujet).filter((p) => !l.epargnes.includes(p.id));
     if (famille(l.sujet) === 'chose' && PROPRIETES[l.prop].remanent !== false) {
       // l'effet transmis par une chose se prolonge un peu après le contact, pour rester visible
       for (const p of cibles) l.remanence[p.id] = ticks(CONFIG.loi.remanence) + 1;

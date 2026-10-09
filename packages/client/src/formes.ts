@@ -57,7 +57,6 @@ export const ICONES: Partial<Record<Mot, (c: Ctx, fond: string) => void>> = {
   MUR: (c) => { for (const [x, y, l] of [[-0.5, -0.45, 0.46], [0.02, -0.45, 0.48], [-0.5, -0.13, 0.2], [-0.24, -0.13, 0.48], [0.3, -0.13, 0.2], [-0.5, 0.19, 0.46], [0.02, 0.19, 0.48]]) c.fillRect(x, y, l, 0.26); },
   CAISSE: (c) => { c.strokeRect(-0.4, -0.4, 0.8, 0.8); c.beginPath(); c.moveTo(-0.4, -0.4); c.lineTo(0.4, 0.4); c.moveTo(0.4, -0.4); c.lineTo(-0.4, 0.4); c.stroke(); },
   COURONNE: (c) => poly(c, [[-0.5, 0.4], [-0.5, -0.32], [-0.25, 0.02], [0, -0.48], [0.25, 0.02], [0.5, -0.32], [0.5, 0.4]]),
-  EST: (c) => { c.fillRect(-0.36, -0.26, 0.72, 0.18); c.fillRect(-0.36, 0.08, 0.72, 0.18); },
   MORT: (c, fond) => {
     disque(c, 0, -0.1, 0.42); c.fillRect(-0.24, 0.16, 0.48, 0.32);
     const encre = c.fillStyle; c.fillStyle = fond;
@@ -70,16 +69,20 @@ export const ICONES: Partial<Record<Mot, (c: Ctx, fond: string) => void>> = {
     c.fillRect(-0.07, -0.28, 0.14, 0.56); c.fillRect(-0.28, -0.07, 0.56, 0.14);
     c.fillStyle = encre;
   },
-  SOLIDE: (c) => { c.fillRect(-0.3, -0.3, 0.6, 0.6); c.strokeRect(-0.44, -0.44, 0.88, 0.88); },
   RAPIDE: (c) => { for (const d of [-0.36, 0.06]) poly(c, [[d, -0.42], [d + 0.2, -0.42], [d + 0.46, 0], [d + 0.2, 0.42], [d, 0.42], [d + 0.26, 0]]); },
   LENT: (c) => { poly(c, [[-0.36, -0.48], [0.36, -0.48], [0, 0]]); poly(c, [[-0.36, 0.48], [0.36, 0.48], [0, 0]]); },
   GEANT: (c) => { c.strokeRect(-0.42, -0.42, 0.84, 0.84); c.fillRect(-0.42, 0.14, 0.28, 0.28); poly(c, [[0.3, -0.3], [0.3, 0.02], [-0.02, -0.3]]); },
   GLISSANT: (c) => { for (const y of [-0.28, 0, 0.28]) { c.beginPath(); c.moveTo(-0.44, y + 0.1); c.quadraticCurveTo(-0.1, y - 0.22, 0.44, y - 0.04); c.stroke(); } },
-  AIMANT: (c, fond) => {
-    c.save(); c.lineWidth = 0.24; c.beginPath(); c.moveTo(-0.28, -0.44); c.lineTo(-0.28, 0.08); c.arc(0, 0.08, 0.28, Math.PI, 0, true); c.lineTo(0.28, -0.44); c.stroke();
-    c.fillStyle = fond; c.fillRect(-0.4, -0.34, 0.24, 0.08); c.fillRect(0.16, -0.34, 0.24, 0.08); c.restore();
-  },
   INVISIBLE: (c) => { c.save(); c.setLineDash([0.14, 0.1]); c.beginPath(); c.arc(0, 0, 0.4, 0, Math.PI * 2); c.stroke(); c.restore(); },
+  // deux flèches qui se croisent
+  INVERSE: (c) => { poly(c, [[-0.5, -0.2], [-0.16, -0.5], [-0.16, -0.3], [0.5, -0.3], [0.5, -0.1], [-0.16, -0.1], [-0.16, 0.1]]); poly(c, [[0.5, 0.2], [0.16, 0.5], [0.16, 0.3], [-0.5, 0.3], [-0.5, 0.1], [0.16, 0.1], [0.16, -0.1]]); },
+  // deux pièces
+  DOUBLE: (c, fond) => { disque(c, -0.14, 0.06, 0.34); const encre = c.fillStyle; c.fillStyle = fond; disque(c, 0.16, -0.06, 0.4); c.fillStyle = encre; disque(c, 0.16, -0.06, 0.32); },
+  // un loup de cambrioleur
+  VOLEUR: (c, fond) => {
+    poly(c, [[-0.5, -0.22], [0.5, -0.22], [0.42, 0.2], [0.1, 0.28], [0, 0.12], [-0.1, 0.28], [-0.42, 0.2]]);
+    const encre = c.fillStyle; c.fillStyle = fond; disque(c, -0.22, 0, 0.11); disque(c, 0.22, 0, 0.11); c.fillStyle = encre;
+  },
 };
 
 export function icone(c: Ctx, mot: Mot, x: number, y: number, taille: number, encre: string, fond: string): void {

@@ -18,6 +18,15 @@ export function reveiller(): void {
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
 }
 
+/** Le Prote lit la loi à voix haute, quand le navigateur a une voix française. */
+export function lire(texte: string): void {
+  if (muet || !('speechSynthesis' in window)) return;
+  const u = new SpeechSynthesisUtterance(texte.toLowerCase());
+  u.lang = 'fr-FR'; u.rate = 1.25; u.pitch = 0.6; u.volume = 0.9;
+  speechSynthesis.cancel(); // une loi chasse l'autre : il ne prend jamais de retard
+  speechSynthesis.speak(u);
+}
+
 export function basculerSon(): boolean {
   muet = !muet;
   if (ctx) sortie.gain.value = muet ? 0 : 0.5;
@@ -61,15 +70,18 @@ let dernierPoint = 0;
 
 export const SONS = {
   pousse: () => { bruit(0.05, 900, { vol: 0.5, q: 3 }); ton(170, 0.06, { type: 'triangle', vol: 0.35 }); },
-  agrippe: () => bruit(0.02, 2600, { vol: 0.3, q: 6 }),
+  // un caractère qu'on sort de la casse, qu'on cale dans le châssis, qu'on jette
+  prise: () => bruit(0.02, 2600, { vol: 0.3, q: 6 }),
+  pose: () => { bruit(0.05, 900, { vol: 0.5, q: 3 }); ton(220, 0.08, { type: 'triangle', vol: 0.4 }); },
+  lance: () => bruit(0.16, 900, { type: 'highpass', vers: 3200, vol: 0.16 }),
   dash: () => bruit(0.14, 500, { type: 'highpass', vers: 4000, vol: 0.2 }),
   choc: () => { ton(110, 0.16, { vers: 45, vol: 0.6 }); bruit(0.09, 1400, { vol: 0.4 }); },
-  // coup de presse + cloche de machine à écrire
-  regleCreee: () => { ton(80, 0.28, { vers: 38, vol: 0.9 }); bruit(0.07, 300, { vol: 0.5 }); ton(1320, 0.7, { vol: 0.16, dans: 0.06 }); ton(1980, 0.5, { vol: 0.08, dans: 0.06 }); },
-  // papier déchiré
-  regleCassee: () => { bruit(0.32, 5000, { vers: 500, vol: 0.45, q: 0.7 }); ton(240, 0.22, { type: 'sawtooth', vers: 70, vol: 0.18 }); },
-  // trois tics qui montent : une règle s'arme sur un joueur
-  arme: (moi: boolean) => [0, 1, 2].forEach((i) => ton(620 + i * 210, 0.09, { type: 'square', vol: moi ? 0.22 : 0.08, dans: i * 0.3 })),
+  // la loi entre en vigueur : coup de presse + cloche de machine à écrire
+  loiActive: () => { ton(80, 0.28, { vers: 38, vol: 0.9 }); bruit(0.07, 300, { vol: 0.5 }); ton(1320, 0.7, { vol: 0.16, dans: 0.06 }); ton(1980, 0.5, { vol: 0.08, dans: 0.06 }); },
+  // trois tics qui montent : une loi s'arme
+  arme: () => [0, 1, 2].forEach((i) => ton(620 + i * 210, 0.09, { type: 'square', vol: 0.2, dans: i * 0.3 })),
+  couronne: () => [1320, 1760].forEach((f, i) => ton(f, 0.12, { type: 'triangle', vol: 0.2, dans: i * 0.07 })),
+  vol: () => [900, 500].forEach((f, i) => ton(f, 0.07, { type: 'square', vol: 0.16, dans: i * 0.06 })),
   mort: () => { ton(320, 0.3, { type: 'square', vers: 50, vol: 0.3 }); bruit(0.2, 700, { vers: 150, vol: 0.4 }); },
   respawn: () => ton(300, 0.16, { type: 'triangle', vers: 900, vol: 0.25 }),
   points: () => {

@@ -185,8 +185,16 @@ export function touche(w: Monde, p: Joueur, chose: Chose): boolean {
   return false;
 }
 
+/** Un mot au sol reste entier dans l'arène, lisible : jamais à cheval sur un bord. */
+const caler = (w: Monde, m: { x: number; y: number }) => {
+  m.x = Math.max(0.9, Math.min(largeur(w) - 0.9, m.x));
+  m.y = Math.max(0.4, Math.min(hauteur(w) - 0.4, m.y));
+};
+
 function semer(w: Monde, mot: Mot, x: number, y: number): void {
-  w.mots.push({ id: w.prochainId++, mot, x, y, dx: 0, dy: 0, reste: 0, par: -1, ne: w.tick });
+  const m = { id: w.prochainId++, mot, x, y, dx: 0, dy: 0, reste: 0, par: -1, ne: w.tick };
+  caler(w, m);
+  w.mots.push(m);
   w.version++;
 }
 
@@ -208,7 +216,8 @@ export function tuer(w: Monde, p: Joueur, l?: Loi): void {
   }
   const auteur = l && w.joueurs.find((j) => j.id === l.auteur);
   if (l) l.victimes++;
-  if (auteur && auteur !== p) { marquer(w, auteur, CONFIG.points.victime); auteur.stats.victimes++; }
+  // une loi qui condamne aussi son auteur ne lui rapporte rien : pas de prime pour un massacre où l'on s'inclut
+  if (l && auteur && auteur !== p && (contact || !resoudre(w, l.sujet).includes(auteur))) { marquer(w, auteur, CONFIG.points.victime); auteur.stats.victimes++; }
   w.evts.push({ t: 'mort', j: p.id, par: l?.auteur ?? -1, ch: l ? w.lois.indexOf(l) : -1 });
 }
 
@@ -322,7 +331,7 @@ export function glisser(w: Monde): void {
         m.reste = -1;
       }
     if (m.reste > 0 && w.joueurs.some((q) => q.id !== m.par && !q.mort && Math.hypot(q.x - m.x, q.y - m.y) < demi(q) + 0.2)) m.reste = 0;
-    if (m.reste === 0) { m.ne = w.tick; w.version++; }
+    if (m.reste === 0) { caler(w, m); m.ne = w.tick; w.version++; }
   }
 }
 

@@ -15,6 +15,7 @@
     "typecheck": "tsc --noEmit -p .",
     "test": "tsx --test packages/shared/test/lois.test.ts packages/shared/test/monde.test.ts packages/server/src/salon.test.ts",
     "simulation": "tsx scripts/simulation.ts",
+    "mesures": "tsx scripts/mesures.ts",
     "lien": "node scripts/lien.mjs"
   },
   "devDependencies": {

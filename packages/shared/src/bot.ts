@@ -45,11 +45,12 @@ function dangers(w: Monde): (x: number, y: number) => boolean {
  * aux autres compte à l'envers, et le leader pèse plus lourd : c'est lui qu'on vise.
  */
 function interet(w: Monde, moi: Joueur, lois: Phrase[], acces: Acces): number {
-  const tete = resoudre(w, 'LEADER'), or = lois[0].sujet as Chose;
+  const premiers = resoudre(w, 'LEADER'), tete = premiers.length < w.joueurs.length ? premiers : []; // à égalité générale, personne à viser
+  const or = lois[0].sujet as Chose;
   const orMortel = lois.some((l) => l.sujet === or && l.prop === 'MORT');
   let v = 0;
   for (const q of w.joueurs) {
-    const k = q === moi ? 1 : tete.includes(q) ? -0.6 : -0.25;
+    const k = q === moi ? 1 : tete.includes(q) ? -0.6 : -0.2;
     for (const l of lois.slice(1)) {
       // une chose ne touche que ceux qui s'en approchent : surtout celle qui rapporte
       const poids = famille(l.sujet) === 'chose' ? (touche(w, q, l.sujet as Chose) ? 1 : l.sujet === or ? 0.4 : 0.1) : resoudre(w, l.sujet).includes(q) ? 1 : 0;
@@ -63,7 +64,9 @@ function interet(w: Monde, moi: Joueur, lois: Phrase[], acces: Acces): number {
 /** Chemin case par case (en largeur) vers le but, ou vers la case atteignable la plus proche du but. */
 function route(w: Monde, p: Joueur, but: Pt, danger: (x: number, y: number) => boolean): Pt[] {
   const L = largeur(w), H = hauteur(w);
-  const passable = (x: number, y: number) => x >= 0 && y >= 0 && x < L && y < H && !solideEn(w, x, y) && (p.mort || !danger(x, y));
+  // un géant ne passe pas dans un couloir d'une case
+  const etroit = (x: number, y: number) => a(p.props, 'bouscule') && ((solideEn(w, x - 1, y) && solideEn(w, x + 1, y)) || (solideEn(w, x, y - 1) && solideEn(w, x, y + 1)));
+  const passable = (x: number, y: number) => x >= 0 && y >= 0 && x < L && y < H && !solideEn(w, x, y) && !etroit(x, y) && (p.mort || !danger(x, y));
   const depart = Math.floor(p.y) * L + Math.floor(p.x), arrivee = Math.floor(but.y) * L + Math.floor(but.x);
   const parent = new Int16Array(L * H).fill(-1);
   parent[depart] = depart;

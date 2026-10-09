@@ -1,8 +1,8 @@
 import {
-  ARENES, CONFIG, DT, appliquer, bouger, creerMonde, libelle, libelleRegle, ticks,
+  ARENES, CONFIG, DT, bouger, creerMonde, glisser, libelle, phrase, replique, ticks,
   type Entree, type EtatSalon, type Evt, type Instantane, type Joueur, type MessageClient, type MessageServeur, type Monde,
 } from '@casse/shared';
-import { SONS, basculerSon, battreMusique, musique, reveiller } from './audio';
+import { SONS, basculerSon, battreMusique, lire as lireLoi, musique, reveiller } from './audio';
 import { lire, surAppui } from './entrees';
 import { COULEUR, ENCRE, svgForme } from './formes';
 import { bulle, dessiner, eclat, flotter, geler, secouer, viderEffets } from './rendu';
@@ -24,6 +24,7 @@ let session: { code: string; jeton: string; pseudo: string } | null = JSON.parse
 let salon: EtatSalon | undefined;
 let moi = -1;
 let w: Monde | undefined;
+let recopier = replique();
 let manches = [0, 0, 0, 0];
 let pred: Joueur | undefined; // mon joueur, prédit localement
 let predAvant = { x: 0, y: 0 };
@@ -146,20 +147,31 @@ function panneau(...contenu: Node[]): void {
   $('panneau').hidden = contenu.length === 0;
 }
 
+/** Les cinq lignes qui précèdent la première manche. */
+const AIDE: (string | [string])[][] = [
+  ['La ', ['Loi d’or'], ' dit ce qui rapporte des points : remplissez sa condition.'],
+  [['Maj'], ' ramasse le mot le plus proche. Vous le portez sur la tête, tout le monde le voit.'],
+  ['Face à un châssis, ', ['Maj'], ' pose votre mot à la place de l’ancien : la loi change. Sinon, ', ['Maj'], ' le lance.'],
+  ['Une loi neuve s’arme 1 s puis frappe. Le mot posé est scellé 5 s.'],
+  [['Espace'], ' : dash, qui fait lâcher mot et couronne. Mort, vous êtes fantôme : réécrivez la loi qui vous tue.'],
+];
+
 function nouvelleManche(idArene: string, ids: number[], numero: number, m: number[]): void {
   const arene = ARENES.find((ar) => ar.id === idArene);
   if (!arene) return;
   w = creerMonde(arene, ids, 0);
+  recopier = replique();
   manches = m; pred = undefined; attente = []; tampons = []; decalage = { x: 0, y: 0 };
   bouclageAnnonce = false; dernierScore = 0;
   viderEffets();
   $('fil').replaceChildren(el('h3', '', 'Dépêches'));
-  lignesRegle.clear();
-  signatureRegles = '';
+  lignesLoi.clear();
+  signatureLois = '';
   construireScores();
   $('chrono').classList.remove('bouclage');
   const balle = ids.filter((c) => m[c] === CONFIG.manche.aGagner - 1);
-  panneau(el('p', 'surtitre', `Manche ${numero}`), el('h2', '', arene.nom), el('p', '', arene.description), el('p', 'compte', ''));
+  const aide = numero === 1 ? [el('ol', 'mode', ...AIDE.map((ligne) => el('li', '', ...ligne.map((k) => (typeof k === 'string' ? k : el('b', '', k[0]))))))] : [];
+  panneau(el('p', 'surtitre', `Manche ${numero}`), el('h2', '', arene.nom), el('p', '', arene.description), ...aide, el('p', 'compte', ''));
   if (balle.length) annoncer('Édition décisive', `Balle de match : ${balle.map(pseudoDe).join(', ')}`, 'long');
   musique(balle.length ? 1 : 0);
   ecran('jeu');
@@ -167,7 +179,7 @@ function nouvelleManche(idArene: string, ids: number[], numero: number, m: numbe
 
 function instantane(s: Instantane): void {
   if (!w) return;
-  appliquer(w, s);
+  recopier(w, s);
   tampons.push({ t: performance.now(), j: s.j });
   if (tampons.length > 12) tampons.shift();
 
@@ -179,7 +191,9 @@ function instantane(s: Instantane): void {
     pred = structuredClone(serveur);
     w.joueurs[i] = pred;
     attente = attente.filter((e) => e.seq > serveur.seq);
-    if (enJeu()) for (const e of attente) bouger(w, pred, e, false);
+    // les gestes (ramasser, poser, lancer) sont rejoués avec le reste : si le serveur en refuse un, il disparaît de lui-même
+    if (enJeu()) for (const e of attente) { bouger(w, pred, e, false); glisser(w); }
+    w.evts = [];
     if (avant) {
       const dx = avant.x - pred.x, dy = avant.y - pred.y;
       if (Math.hypot(dx, dy) < 1.5) { decalage.x += dx; decalage.y += dy; predAvant.x -= dx; predAvant.y -= dy; }
@@ -194,11 +208,14 @@ function instantane(s: Instantane): void {
 function pasClient(): void {
   if (!w || !pred || !enJeu()) { lire(); return; }
   const entree: Entree = { seq: ++seq, ...lire() };
-  envoyer({ t: 'i', s: entree.seq, mx: entree.mx, my: entree.my, d: entree.dash, g: entree.agrippe });
+  envoyer({ t: 'i', s: entree.seq, mx: entree.mx, my: entree.my, d: entree.dash, a: entree.action });
   predAvant = { x: pred.x, y: pred.y };
-  const tenait = pred.tient;
+  const portait = pred.porte;
   bouger(w, pred, entree, false);
-  if (pred.tient >= 0 && tenait < 0) SONS.agrippe();
+  glisser(w);
+  // le geste est prédit : son bruit n'attend pas le serveur
+  if (pred.porte !== portait) { if (pred.porte) SONS.prise(); else if (w.evts.some((e) => e.t === 'loi')) SONS.pose(); else SONS.lance(); }
+  w.evts = [];
   attente.push(entree);
   if (attente.length > 90) attente.shift();
 }
@@ -226,6 +243,8 @@ function positions(alpha: number): Map<number, { x: number; y: number }> {
 const fileAnnonces: [string, string, string][] = [];
 let annonceEnCours = false;
 function annoncer(sur: string, texte: string, classe = ''): void {
+  // une loi chasse l'autre : le décret affiché est toujours le dernier écrit
+  if (classe === 'loi') for (let i = fileAnnonces.length - 1; i >= 0; i--) if (fileAnnonces[i][2] === 'loi') fileAnnonces.splice(i, 1);
   if (fileAnnonces.length >= 3) fileAnnonces.shift();
   fileAnnonces.push([sur, texte, classe]);
   if (!annonceEnCours) annonceSuivante();
@@ -236,12 +255,12 @@ function annonceSuivante(): void {
   if (!suivante) return $('annonce').replaceChildren();
   const [sur, texte, classe] = suivante;
   $('annonce').replaceChildren(el('div', `tampon ${classe}`, el('small', '', sur), el('strong', '', texte)));
-  setTimeout(annonceSuivante, classe.includes('long') ? 1600 : 500);
+  setTimeout(annonceSuivante, classe.includes('long') ? 1600 : classe.includes('loi') ? 950 : 500);
 }
 
 // --- fil d'événements ------------------------------------------------------------
 
-const lignesRegle = new Map<string, { suffixe: HTMLElement; n: number }>();
+const lignesLoi = new Map<number, { suffixe: HTMLElement; n: number }>();
 function depeche(...contenu: (Node | string)[]): HTMLElement {
   const ligne = el('p', 'evenement', ...contenu);
   $('fil').firstElementChild?.after(ligne);
@@ -254,43 +273,49 @@ function evenement(e: Evt): void {
   if (!w) return;
   const ou = (c: number) => w!.joueurs.find((j) => j.id === c) ?? { x: 0, y: 0 };
   switch (e.t) {
-    case 'regle': {
-      const texte = libelleRegle(e.id);
-      const qui = e.par >= 0 ? nom(e.par) : 'Le ciel';
-      if (e.on) {
-        annoncer('Par décret', texte);
-        SONS.regleCreee(); secouer(0.3); geler(60);
-        const suffixe = el('span', '');
-        depeche(qui, ' a imposé ', el('b', '', texte), suffixe);
-        lignesRegle.set(e.id, { suffixe, n: 0 });
-      } else {
-        annoncer('Abrogé', texte, 'abroge');
-        SONS.regleCassee(); secouer(0.2);
-        depeche(qui, ' a abrogé ', el('b', '', texte), e.victimes ? ` (${e.victimes} victime${e.victimes > 1 ? 's' : ''} au compteur)` : '');
-        lignesRegle.delete(e.id);
-      }
-      if (e.par >= 0) eclat(ou(e.par).x, ou(e.par).y, e.on ? ENCRE : COULEUR[0], 16, 6);
+    case 'loi': {
+      // armement : la nouvelle phrase en grand, lue par le Prote
+      const texte = phrase(e);
+      annoncer(e.par >= 0 ? 'Par décret' : 'Le ciel décrète', texte, 'loi');
+      SONS.arme(); lireLoi(texte);
+      const suffixe = el('span', '');
+      depeche(e.par >= 0 ? nom(e.par) : 'Le ciel', ' a écrit ', el('b', '', texte), suffixe);
+      lignesLoi.set(e.ch, { suffixe, n: 0 });
+      if (e.par >= 0) eclat(ou(e.par).x, ou(e.par).y, COULEUR[e.par], 16, 6);
       return;
     }
+    case 'active': {
+      // elle entre en vigueur : coup de presse, et un marqueur sur chaque joueur touché
+      const l = w.lois[e.ch];
+      SONS.loiActive(); secouer(0.3); geler(60);
+      for (const j of l.touches) { flotter(ou(j).x, ou(j).y - 0.7, `${libelle(l.prop)} !`, COULEUR[j]); eclat(ou(j).x, ou(j).y, ENCRE, 10, 5); }
+      if (l.touches.includes(moi)) $('cadre').animate([{ outline: `10px solid ${COULEUR[moi]}` }, { outline: '0 solid transparent' }], { duration: 600 });
+      return;
+    }
+    case 'prise': if (e.j !== moi) SONS.prise(); return;
+    case 'lance': if (e.j !== moi) SONS.lance(); return;
     case 'mort': {
-      const p = ou(e.j);
+      const p = ou(e.j), l = w.lois[e.ch];
       SONS.mort(); eclat(p.x, p.y, COULEUR[e.j], 26, 7); secouer(0.4); geler(90);
-      const ligne = lignesRegle.get(e.regle);
+      const ligne = lignesLoi.get(e.ch);
       if (ligne) ligne.suffixe.textContent = victimes(++ligne.n);
-      if (e.par === e.j) depeche(nom(e.j), ' s’est condamné tout seul : ', el('b', '', libelleRegle(e.regle)));
-      else depeche(nom(e.j), ' succombe à ', el('b', '', libelleRegle(e.regle)), ...(e.par >= 0 ? [' — signé ', nom(e.par)] : []));
+      const texte = l ? el('b', '', phrase(l)) : 'un accident';
+      if (e.par === e.j) depeche(nom(e.j), ' s’est condamné tout seul : ', texte);
+      else depeche(nom(e.j), ' succombe à ', texte, ...(e.par >= 0 ? [' — signé ', nom(e.par)] : []));
       if (e.par >= 0 && e.par !== e.j) flotter(ou(e.par).x, ou(e.par).y - 0.6, `+${CONFIG.points.victime}`, COULEUR[e.par]);
       return;
     }
-    case 'arme':
-      SONS.arme(e.j === moi);
-      if (e.j === moi) { $('cadre').animate([{ outline: `10px solid ${COULEUR[0]}` }, { outline: '0 solid transparent' }], { duration: 1000 }); toast(`Une règle s’arme sur vous : ${libelle(e.prop)} dans 1 s`); }
+    case 'couronne': SONS.couronne(); eclat(ou(e.j).x, ou(e.j).y, COULEUR[3], 14, 5); return;
+    case 'vol':
+      SONS.vol();
+      flotter(ou(e.b).x, ou(e.b).y - 0.6, `−${e.n}`, COULEUR[e.b]); flotter(ou(e.a).x, ou(e.a).y - 0.6, `+${e.n}`, COULEUR[e.a]);
       return;
+    case 'efface': eclat(e.x, e.y, ENCRE, 8, 3); return;
     case 'choc': SONS.choc(); eclat(ou(e.b).x, ou(e.b).y, COULEUR[3], 12, 6); secouer(0.3); geler(70); return;
     case 'dash': SONS.dash(); eclat(ou(e.j).x, ou(e.j).y, ENCRE, 6, 3); return;
     case 'pousse': SONS.pousse(); eclat(e.x + 0.5, e.y + 0.5, ENCRE, 4, 2); return;
     case 'ombre': SONS.ombre(); depeche('Un mot tombe du ciel : ', el('b', '', libelle(e.mot))); return;
-    case 'chute': SONS.chute(); secouer(0.25); eclat(e.x + 0.5, e.y + 0.5, ENCRE, 14, 5); return;
+    case 'chute': SONS.chute(); secouer(0.25); eclat(e.x, e.y, ENCRE, 14, 5); return;
     case 'respawn': SONS.respawn(); eclat(ou(e.j).x, ou(e.j).y, COULEUR[e.j], 10, 4); return;
     case 'phase':
       if (e.phase === 'jeu') { SONS.go(); panneau(); }
@@ -318,7 +343,7 @@ function construireScores(): void {
   majScores(true);
 }
 
-let signatureRegles = '';
+let signatureLois = '';
 function majScores(forcer = false): void {
   if (!w) return;
   for (const j of w.joueurs) {
@@ -346,13 +371,15 @@ function majScores(forcer = false): void {
     chrono?.classList.add('bouclage');
   }
 
-  const signature = w.regles.map((r) => `${r.id}${r.auteur}${r.victimes}`).join('|');
-  if (signature === signatureRegles) return;
-  signatureRegles = signature;
-  $('regles').replaceChildren(el('h3', '', 'En vigueur'), ...w.regles.map((r) => {
-    const ligne = el('div', 'regle', libelleRegle(r.id));
-    if (r.auteur >= 0) ligne.prepend(svgForme(r.auteur));
-    if (r.victimes) ligne.append(el('small', '', `${r.victimes} †`));
+  // le bandeau des lois : la Loi d'or d'abord, puis chaque loi avec les joueurs qu'elle touche en ce moment
+  const signature = w.lois.map((l) => `${l.sujet}${l.prop}${l.auteur}${l.arme > 0}${l.touches}${l.victimes}`).join('|');
+  if (signature === signatureLois) return;
+  signatureLois = signature;
+  $('regles').replaceChildren(el('h3', '', 'En vigueur'), ...w.lois.map((l, ch) => {
+    const touches = el('span', 'touches', ...l.touches.map(svgForme));
+    const ligne = el('div', `regle${ch === 0 ? ' or' : ''}${l.arme > 0 ? ' arme' : l.touches.length ? '' : ' vide'}`, el('span', 'phrase', phrase(l)), touches);
+    ligne.style.setProperty('--c', l.auteur >= 0 ? COULEUR[l.auteur] : ENCRE);
+    if (l.victimes) touches.append(el('small', '', `${l.victimes} †`));
     return ligne;
   }));
 }

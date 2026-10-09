@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CASSE — Les règles sont faites pour être cassées</title>
-  <meta name="description" content="Party game à 2-4 joueurs : personne n'a d'arme, on réécrit les règles.">
+  <meta name="description" content="Party game à 2-4 joueurs : personne n'a d'arme, on réécrit les lois.">
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="preload" href="/polices/anton.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/style.css">
@@ -24,7 +24,7 @@
       </div>
       <button type="button" id="essai" class="discret">Essai seul contre trois bots</button>
     </form>
-    <p class="aide">Pousser : marcher dans un bloc · Agripper : <kbd>Maj</kbd> · Dash : <kbd>Espace</kbd> · Émotes : <kbd>1</kbd>–<kbd>4</kbd> · Son : <kbd>M</kbd><br>Déplacement : flèches ou les touches à la place de WASD (ZQSD en AZERTY). Manette reconnue.</p>
+    <p class="aide">Ramasser, poser, lancer un mot : <kbd>Maj</kbd> · Dash : <kbd>Espace</kbd> · Émotes : <kbd>1</kbd>–<kbd>4</kbd> · Son : <kbd>M</kbd><br>Déplacement : flèches ou les touches à la place de WASD (ZQSD en AZERTY). Manette reconnue.</p>
   </main>
 
   <main id="salon" class="ecran" hidden>
@@ -47,13 +47,13 @@
   <main id="jeu" class="ecran" hidden>
     <header id="scores"></header>
     <div id="scene">
-      <aside id="regles" aria-label="Règles en vigueur"></aside>
+      <aside id="regles" aria-label="Lois en vigueur"></aside>
       <div id="cadre"><canvas id="toile"></canvas></div>
       <aside id="fil" aria-label="Fil d'événements" aria-live="off"></aside>
       <div id="annonce" aria-live="assertive"></div>
       <div id="panneau" hidden></div>
     </div>
-    <footer class="aide">Agripper <kbd>Maj</kbd> · Dash <kbd>Espace</kbd> · <kbd>1</kbd> HA ! <kbd>2</kbd> OUPS <kbd>3</kbd> TRAÎTRE ! <kbd>4</kbd> BIEN JOUÉ · Son <kbd>M</kbd> · Fantôme : poussez encore les blocs !</footer>
+    <footer class="aide">Ramasser · poser · lancer <kbd>Maj</kbd> · Dash <kbd>Espace</kbd> · <kbd>1</kbd> HA ! <kbd>2</kbd> OUPS <kbd>3</kbd> TRAÎTRE ! <kbd>4</kbd> BIEN JOUÉ · Son <kbd>M</kbd> · Fantôme : réécrivez la loi qui vous tue !</footer>
   </main>
 
   <main id="fin" class="ecran" hidden></main>

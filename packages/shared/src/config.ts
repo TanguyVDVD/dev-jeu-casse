@@ -10,7 +10,7 @@ export const CONFIG = {
   loi: { armement: 1, sceau: 5, sceauBouclage: 0.5, remanence: 0.75 },
   props: { lent: 0.55, rapide: 1.5, rapideRecharge: 2, geant: 2, geantVitesse: 0.85, double: 2, vol: 2, volRecharge: 1 },
   points: { periode: 0.5, victime: 3, bouclage: 2 },
-  fantome: { contact: 3, retour: 2, max: 8 },
+  fantome: { contact: 3, retour: 2, max: 6 },
   chute: { periode: 15, ombre: 2, inertie: 20, ecart: 4, max: 8 },
   contact: 0.08,
   reseau: { interpolationMs: 100, placeGardee: 60, messagesParSeconde: 80, octetsMax: 512 },
